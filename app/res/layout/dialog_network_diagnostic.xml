@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/network_diag_panel"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_md3_dialog"
+    android:elevation="8dp"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <ImageView
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:contentDescription="@null"
+        android:src="@drawable/ic_error_cross" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:fontFamily="sans-serif-medium"
+        android:text="@string/network_diag_title"
+        android:textColor="@color/on_surface"
+        android:textSize="20sp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="9dp"
+        android:lineSpacingExtra="3dp"
+        android:text="@string/network_diag_message"
+        android:textColor="@color/on_surface_variant"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/network_diag_ok"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_gravity="end"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/bg_md3_text_button"
+        android:clickable="true"
+        android:focusable="true"
+        android:fontFamily="sans-serif-medium"
+        android:gravity="center"
+        android:minWidth="72dp"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:text="@string/network_diag_ok"
+        android:textColor="@color/primary"
+        android:textSize="14sp" />
+</LinearLayout>

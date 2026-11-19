@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>网络连接超时</title>
+<style>
+  :root {
+    --bg: #FBF7FF;
+    --surface: #FFFFFF;
+    --text: #241A33;
+    --muted: #6E5E82;
+    --primary: #6D28D9;
+    --error: #BA1A1A;
+    --border: #E8DFF5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #08060F;
+      --surface: #120D1D;
+      --text: #F3ECFF;
+      --muted: #B7A6CD;
+      --primary: #C4A7FF;
+      --error: #FFB4AB;
+      --border: #3B2D50;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 28px;
+    background:
+      radial-gradient(circle at 50% -10%, rgba(124, 58, 237, 0.16), transparent 55%),
+      var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Roboto", "Noto Sans SC", "Noto Sans CJK SC", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .card {
+    width: 100%;
+    max-width: 380px;
+    padding: 28px 24px 24px;
+    border-radius: 28px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.12);
+  }
+  .icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(186, 26, 26, 0.10);
+    color: var(--error);
+    margin-bottom: 20px;
+  }
+  h1 {
+    margin: 0 0 10px;
+    font-size: 21px;
+    line-height: 1.35;
+    font-weight: 650;
+  }
+  p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.65;
+  }
+  .actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 24px;
+  }
+  button {
+    appearance: none;
+    border: 0;
+    border-radius: 22px;
+    background: var(--primary);
+    color: #FFFFFF;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 12px 22px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  button:active { transform: scale(0.97); }
+  .brand {
+    margin-top: 34px;
+    color: var(--muted);
+    font-size: 10.5px;
+    letter-spacing: 0.04em;
+    opacity: 0.55;
+  }
+</style>
+</head>
+<body>
+  <main class="card">
+    <div class="icon" aria-hidden="true">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+        <path d="M6 6L18 18M18 6L6 18"/>
+      </svg>
+    </div>
+    <h1>网络连接超时</h1>
+    <p>无法连接到该网站。请检查您的代理或防火墙设置。</p>
+    <div class="actions">
+      <button type="button" onclick="retryFromErrorPage()">重试</button>
+    </div>
+    <div class="brand">深探</div>
+  </main>
+  <script>
+    function retryFromErrorPage() {
+      try {
+        if (window.ErrorPage && typeof window.ErrorPage.retry === 'function') {
+          window.ErrorPage.retry();
+        }
+      } catch (e) { }
+    }
+  </script>
+</body>
+</html>
