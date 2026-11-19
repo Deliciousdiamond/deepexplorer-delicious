@@ -30,6 +30,19 @@
 
 ---
 
+## 截图
+
+<p align="center">
+  <img src="docs/screenshots/home.jpg" width="220" alt="首页组件">
+  <img src="docs/screenshots/search.jpg" width="220" alt="搜索引擎">
+  <img src="docs/screenshots/ai.jpg" width="220" alt="AI 对话">
+  <img src="docs/screenshots/settings.jpg" width="220" alt="设置">
+</p>
+
+<p align="center"><sub>首页组件 · 12 个搜索引擎 · 内置 DeepSeek · 设置</sub></p>
+
+---
+
 ## 功能
 
 ### 浏览
