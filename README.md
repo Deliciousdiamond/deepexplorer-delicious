@@ -111,8 +111,11 @@
 
 ## 安装
 
-1. 去 Releases 下载 `DeepExplorer-1.9.2.apk`
+1. 去 [Releases](https://github.com/Deliciousdiamond/deepexplorer-delicious/releases) 下载 `DeepExplorer-1.9.2.apk`
 2. 允许「安装未知来源应用」，装上即可
+
+> **签名提醒**：1.9.0 起换了新的签名密钥，从 1.8.x 直接覆盖会安装失败。
+> 需要先卸载旧版，书签、设置和 API Key 会一并清空。
 
 同一个签名可以直接覆盖安装，不用先卸载。
 **注意：卸载会清掉书签、设置和 API Key。三思而后行！**
