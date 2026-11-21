@@ -4476,6 +4476,14 @@ public class MainActivity extends Activity {
             enginePopup.dismiss();
             enginePopup = null;
         }
+        if (menuPopup != null) {
+            menuPopup.dismiss();
+            menuPopup = null;
+        }
+        if (aiQuickPopup != null) {
+            aiQuickPopup.dismiss();
+            aiQuickPopup = null;
+        }
         if (bookmarksDialog != null) {
             bookmarksDialog.dismiss();
             bookmarksDialog = null;
@@ -4530,6 +4538,10 @@ public class MainActivity extends Activity {
     public void onBackPressed() {
         if (enginePopup != null && enginePopup.isShowing()) {
             enginePopup.dismiss();
+            return;
+        }
+        if (aiQuickPopup != null && aiQuickPopup.isShowing()) {
+            aiQuickPopup.dismiss();
             return;
         }
         if (menuPopup != null && menuPopup.isShowing()) {
