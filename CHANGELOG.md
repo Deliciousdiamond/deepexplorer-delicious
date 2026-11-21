@@ -2,6 +2,17 @@
 
 All notable changes are documented here. Version format follows `1.x.y`.
 
+## 1.10.0 — 2026-11-21
+
+- Custom search engines: the engine picker now has「添加自定义搜索引擎」where a name
+  and a URL template with `%s` can be entered. Long-press a custom engine to delete it.
+- AI endpoint settings: Settings → AI 接口设置 switches between DeepSeek official and
+  any OpenAI-compatible base URL + model. The same API key field is used for both.
+- One-tap page summary: tapping the AI floating button in the browser opens a small
+  menu with「问 AI」and「AI 总结本页」; the same action is in the page menu. The visible
+  page text is extracted, capped at 6,000 characters, and sent as hidden context so
+  the chat bubble stays short.
+
 ## 1.9.3 — 2026-11-21
 
 - Weather city input is now checked against the Open-Meteo geocoder before it is

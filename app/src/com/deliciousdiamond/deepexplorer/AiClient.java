@@ -21,8 +21,6 @@ import java.nio.charset.StandardCharsets;
  * are only delivered while the request that produced them is still the current one.</p>
  */
 public final class AiClient {
-    private static final String ENDPOINT = "https://api.deepseek.com/chat/completions";
-
     public interface Listener {
         void onStart();
 
@@ -48,8 +46,8 @@ public final class AiClient {
     private volatile Request current;
     private int nextId;
 
-    public void stream(final String apiKey, final String model, final JSONArray messages,
-                       final Listener listener) {
+    public void stream(final String endpoint, final String apiKey, final String model,
+                       final JSONArray messages, final Listener listener) {
         final Request request = new Request(++nextId);
         Request previous = current;
         current = request;
@@ -58,7 +56,7 @@ public final class AiClient {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                runRequest(request, apiKey, model, messages, listener);
+                runRequest(request, endpoint, apiKey, model, messages, listener);
             }
         }, "deepseek-sse");
         request.thread = thread;
@@ -66,7 +64,7 @@ public final class AiClient {
         thread.start();
     }
 
-    private void runRequest(final Request request, String apiKey, String model,
+    private void runRequest(final Request request, String endpoint, String apiKey, String model,
                             JSONArray messages, Listener listener) {
         InputStream input = null;
         try {
@@ -81,11 +79,14 @@ public final class AiClient {
             body.put("model", chosenModel);
             body.put("messages", messages);
             body.put("stream", true);
-            if (!"deepseek-reasoner".equals(chosenModel)) body.put("temperature", 0.7);
+            String lower = chosenModel.toLowerCase();
+            boolean reasoning = "deepseek-reasoner".equals(chosenModel)
+                    || lower.contains("reasoner") || lower.startsWith("o1") || lower.startsWith("o3");
+            if (!reasoning) body.put("temperature", 0.7);
             body.put("max_tokens", 2048);
             byte[] payload = body.toString().getBytes(StandardCharsets.UTF_8);
 
-            HttpURLConnection conn = (HttpURLConnection) new URL(ENDPOINT).openConnection();
+            HttpURLConnection conn = (HttpURLConnection) new URL(endpoint).openConnection();
             request.connection = conn;
             if (!isActive(request)) return;
             conn.setRequestMethod("POST");
