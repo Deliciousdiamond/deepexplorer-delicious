@@ -31,7 +31,7 @@
     <string name="settings_cache_note">WebView 缓存上限 100 MB · 退出应用时自动清理缓存和历史</string>
     <string name="clear_cache">一键清理缓存</string>
     <string name="cache_cleared">缓存与历史已清理</string>
-    <string name="settings_about">1.9.2</string>
+    <string name="settings_about">1.9.3</string>
     <string name="key_saved">API Key 已保存</string>
     <string name="key_missing">请先在设置中填写 DeepSeek API Key</string>
     <string name="ai_error">请求失败</string>
@@ -123,6 +123,10 @@
     <string name="widget_refresh_hint">点按刷新</string>
     <string name="widget_weather_loading">正在获取天气…</string>
     <string name="widget_weather_failed">天气获取失败，点按重试</string>
+    <string name="widget_weather_checking">正在校验城市…</string>
+    <string name="widget_weather_city_not_found">找不到这个城市，检查一下输入</string>
+    <string name="widget_weather_network">网络不可用，暂时无法校验城市</string>
+    <string name="widget_weather_city_missing">城市不存在，点按修改</string>
     <string name="widget_weather_updated">%1$s 更新</string>
     <string name="widget_weather_city">城市</string>
     <string name="widget_weather_city_hint">例如：北京</string>

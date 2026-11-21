@@ -2,6 +2,16 @@
 
 All notable changes are documented here. Version format follows `1.x.y`.
 
+## 1.9.3 — 2026-11-21
+
+- Weather city input is now checked against the Open-Meteo geocoder before it is
+  saved; a typo shows "找不到这个城市" instead of silently showing weather for an
+  unrelated place. Existing invalid cities open the editor when tapped.
+- Weather is fetched by the coordinates resolved from that city, so wttr.in can no
+  longer fall back to its own guess for an unknown name.
+- build.sh now passes explicit `--v1/--v2/--v3` signing flags to apksigner. All three
+  schemes were already present, but the intent is now visible in the script.
+
 ## 1.9.2 — 2026-11-18
 
 - The quote widget now pulls from Hitokoto (一言), a large Chinese quote collection,

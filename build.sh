@@ -71,6 +71,7 @@ echo "[5/6] align + sign"
 zipalign -f -p 4 build/app.unsigned.apk build/app.aligned.apk
 apksigner sign --ks "$KEYSTORE" --ks-key-alias "$KEY_ALIAS" \
   --ks-pass "pass:$KEYSTORE_PASS" --key-pass "pass:$KEY_PASS" \
+  --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled true \
   --out "$OUT" build/app.aligned.apk
 apksigner verify --verbose "$OUT" >/dev/null
 
