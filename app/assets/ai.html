@@ -225,6 +225,7 @@ body {
   var current = null;
   var renderQueued = false;
   var dark = false;
+  var uiStrings = { thinking: '思考中…', interrupted: '回答中断。', requestFailed: '请求失败', close: '关闭' };
 
   function escapeHtml(text) {
     return String(text == null ? '' : text).replace(/[&<>"']/g, function (c) {
@@ -398,6 +399,15 @@ body {
     setFont: function (family) {
       if (family) document.body.style.fontFamily = family;
     },
+    setStrings: function (strings) {
+      if (strings) {
+        for (var key in strings) {
+          if (Object.prototype.hasOwnProperty.call(strings, key)) uiStrings[key] = strings[key];
+        }
+      }
+      var closeBtn = document.getElementById('close-btn');
+      if (closeBtn) closeBtn.setAttribute('aria-label', uiStrings.close);
+    },
     setModel: function (name) {
       var el = document.getElementById('model-name');
       if (el && name) el.textContent = name;
@@ -424,7 +434,7 @@ body {
       el.setAttribute('data-raw', '');
       var body = document.createElement('div');
       body.className = 'md';
-      body.innerHTML = '<p>思考中…</p>';
+      body.innerHTML = '<p>' + uiStrings.thinking + '</p>';
       el.appendChild(body);
       chat.appendChild(el);
       current = el;
@@ -452,13 +462,13 @@ body {
         current.classList.remove('streaming');
         var body = current.querySelector('.md');
         if (body && !(current.getAttribute('data-raw') || '')) {
-          body.innerHTML = '<p>回答中断。</p>';
+          body.innerHTML = '<p>' + uiStrings.interrupted + '</p>';
         }
         current = null;
       }
       var el = document.createElement('div');
       el.className = 'msg error';
-      el.textContent = message == null ? '请求失败' : String(message);
+      el.textContent = message == null ? uiStrings.requestFailed : String(message);
       chat.appendChild(el);
       scrollBottom();
     },

@@ -158,7 +158,8 @@ final class HomeWidgets {
 
     private LinearLayout buildWeatherCard(final WidgetStore.Item item) {
         final LinearLayout card = baseCard();
-        String city = item.title == null || item.title.trim().isEmpty() ? "北京" : item.title.trim();
+        String city = item.title == null || item.title.trim().isEmpty()
+                ? activity.getString(R.string.weather_default_city) : item.title.trim();
 
         LinearLayout header = new LinearLayout(activity);
         header.setOrientation(LinearLayout.HORIZONTAL);
@@ -189,8 +190,8 @@ final class HomeWidgets {
         if (weather != null && weather.city.equals(city)) {
             tempText = Math.round(weather.temperature) + "°";
             descText = weather.description;
-            metaText = new SimpleDateFormat("HH:mm", Locale.getDefault())
-                    .format(new Date(weather.time)) + " 更新";
+            metaText = activity.getString(R.string.widget_weather_updated,
+                    new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date(weather.time)));
         } else if (failed) {
             tempText = "--";
             descText = activity.getString(weatherErrorCode == WEATHER_ERROR_CITY
@@ -413,14 +414,15 @@ final class HomeWidgets {
 
     private String summaryOf(WidgetStore.Item item) {
         if (WidgetStore.WEATHER.equals(item.type)) {
-            return item.title == null || item.title.trim().isEmpty() ? "未设置城市" : item.title;
+            return item.title == null || item.title.trim().isEmpty()
+                    ? activity.getString(R.string.weather_no_city) : item.title;
         }
         if (WidgetStore.ADDRESS.equals(item.type)) {
             return item.title + " · " + item.value;
         }
         if (WidgetStore.NOTE.equals(item.type)) {
             String body = item.value == null ? "" : item.value.trim().replace('\n', ' ');
-            if (body.isEmpty()) return "还没有内容";
+            if (body.isEmpty()) return activity.getString(R.string.weather_no_content);
             return body.length() > 40 ? body.substring(0, 40) + "…" : body;
         }
         return activity.getString(R.string.widget_quote_summary);
@@ -600,7 +602,7 @@ final class HomeWidgets {
     private void loadWeather(final WidgetStore.Item item) {
         if (destroyed || weatherLoading) return;
         final String city = item.title == null || item.title.trim().isEmpty()
-                ? "北京" : item.title.trim();
+                ? activity.getString(R.string.weather_default_city) : item.title.trim();
         final Weather cached = readWeather();
         long now = System.currentTimeMillis();
         if (cached != null && cached.city.equals(city) && now - cached.time < WEATHER_TTL_MS) {
@@ -688,26 +690,26 @@ final class HomeWidgets {
     }
 
     /** Maps the WWO condition codes returned by wttr.in to short Chinese labels. */
-    private static String describeWeather(int code) {
+    private String describeWeather(int code) {
         switch (code) {
-            case 113: return "晴";
-            case 116: return "晴间多云";
-            case 119: return "多云";
-            case 122: return "阴";
-            case 143: case 248: case 260: return "有雾";
-            case 176: case 263: case 266: case 293: case 296: case 353: return "小雨";
-            case 299: case 302: case 356: return "中雨";
-            case 305: case 308: case 359: return "大雨";
-            case 179: case 323: case 326: case 368: return "小雪";
-            case 329: case 332: case 371: return "中雪";
-            case 335: case 338: return "大雪";
+            case 113: return activity.getString(R.string.weather_sunny);
+            case 116: return activity.getString(R.string.weather_mostly_sunny);
+            case 119: return activity.getString(R.string.weather_partly_cloudy);
+            case 122: return activity.getString(R.string.weather_cloudy);
+            case 143: case 248: case 260: return activity.getString(R.string.weather_fog);
+            case 176: case 263: case 266: case 293: case 296: case 353: return activity.getString(R.string.weather_light_rain);
+            case 299: case 302: case 356: return activity.getString(R.string.weather_rain);
+            case 305: case 308: case 359: return activity.getString(R.string.weather_heavy_rain);
+            case 179: case 323: case 326: case 368: return activity.getString(R.string.weather_light_snow);
+            case 329: case 332: case 371: return activity.getString(R.string.weather_snow);
+            case 335: case 338: return activity.getString(R.string.weather_heavy_snow);
             case 182: case 185: case 281: case 284: case 311: case 314:
             case 317: case 320: case 362: case 365: case 374: case 377:
-                return "雨夹雪";
-            case 200: case 386: case 389: case 392: case 395: return "雷雨";
-            case 227: case 230: return "风雪";
-            case 350: return "冰粒";
-            default: return "天气";
+                return activity.getString(R.string.weather_sleet);
+            case 200: case 386: case 389: case 392: case 395: return activity.getString(R.string.weather_thunder);
+            case 227: case 230: return activity.getString(R.string.weather_blizzard);
+            case 350: return activity.getString(R.string.weather_ice);
+            default: return activity.getString(R.string.weather_unknown);
         }
     }
 

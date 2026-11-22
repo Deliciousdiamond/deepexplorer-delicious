@@ -1,5 +1,7 @@
 package com.deliciousdiamond.deepexplorer;
 
+import android.content.Context;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -21,6 +23,12 @@ import java.nio.charset.StandardCharsets;
  * are only delivered while the request that produced them is still the current one.</p>
  */
 public final class AiClient {
+    private final Context context;
+
+    public AiClient(Context context) {
+        this.context = context.getApplicationContext();
+    }
+
     public interface Listener {
         void onStart();
 
@@ -71,7 +79,7 @@ public final class AiClient {
             if (!isActive(request)) return;
             if (apiKey == null || apiKey.trim().isEmpty()) {
                 if (!isActive(request)) return;
-                listener.onError("请先在设置中填写 DeepSeek API Key");
+                listener.onError(context.getString(R.string.key_missing));
                 return;
             }
             JSONObject body = new JSONObject();
@@ -188,16 +196,16 @@ public final class AiClient {
                 && request.thread != null && request.thread.isAlive();
     }
 
-    private static String networkMessage(Throwable t) {
+    private String networkMessage(Throwable t) {
         String message = t == null ? "" : String.valueOf(t.getMessage());
-        if (message.toLowerCase().contains("timeout")) return "请求超时，请稍后再试。";
-        return "网络连接失败，请检查网络后重试。";
+        if (message.toLowerCase().contains("timeout")) return context.getString(R.string.ai_timeout);
+        return context.getString(R.string.ai_network);
     }
 
-    private static String friendlyError(int code, String detail) {
-        if (code == 401) return "API Key 无效或已过期。";
-        if (code == 402) return "API 余额不足。";
-        if (code == 429) return "请求过于频繁，请稍后再试。";
+    private String friendlyError(int code, String detail) {
+        if (code == 401) return context.getString(R.string.ai_auth);
+        if (code == 402) return context.getString(R.string.ai_balance);
+        if (code == 429) return context.getString(R.string.ai_rate);
         String fromBody = null;
         try {
             JSONObject object = new JSONObject(detail);
@@ -205,8 +213,8 @@ public final class AiClient {
             if (error != null) fromBody = error.optString("message", null);
         } catch (Exception ignored) {
         }
-        if (fromBody != null && !fromBody.isEmpty()) return "请求失败：" + fromBody;
-        return "请求失败（HTTP " + code + "）";
+        if (fromBody != null && !fromBody.isEmpty()) return context.getString(R.string.ai_request_prefix, fromBody);
+        return context.getString(R.string.ai_http, code);
     }
 
     private static String readLimited(InputStream input, int max) {

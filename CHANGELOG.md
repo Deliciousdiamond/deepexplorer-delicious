@@ -2,6 +2,14 @@
 
 All notable changes are documented here. Version format follows `1.x.y`.
 
+## 1.11.0 — 2026-11-22
+
+- The UI is now localized into English, Japanese and Traditional Chinese. Settings →
+  语言 switches between following the system and a manual override; switching reloads
+  the UI (open tabs are closed, since tabs are not persisted yet).
+- Remaining hard-coded UI text was moved into resources: home widgets, weather
+  descriptions, AI panel strings, error page, tab titles and AI error messages.
+
 ## 1.10.0 — 2026-11-21
 
 - Custom search engines: the engine picker now has「添加自定义搜索引擎」where a name

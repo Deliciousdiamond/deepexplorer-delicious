@@ -61,10 +61,12 @@ public final class TabAdapter extends BaseAdapter {
         TextView url = row.findViewById(R.id.tab_item_url);
         ImageView close = row.findViewById(R.id.tab_item_close);
 
-        String label = tab.title == null || tab.title.isEmpty() ? "新标签页" : tab.title;
+        String label = tab.title == null || tab.title.isEmpty()
+                ? context.getString(R.string.new_tab_page) : tab.title;
         title.setText(label);
         title.setTextColor(context.getResources().getColor(tab.id == currentId ? R.color.primary : R.color.on_surface));
-        url.setText(tab.url == null || tab.url.isEmpty() ? "新标签页" : tab.url);
+        url.setText(tab.url == null || tab.url.isEmpty()
+                ? context.getString(R.string.new_tab_page) : tab.url);
         row.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

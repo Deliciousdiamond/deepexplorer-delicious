@@ -42,12 +42,12 @@ final class WidgetStore {
         return context.getSharedPreferences(FILE, Context.MODE_PRIVATE);
     }
 
-    static Item[] defaults() {
+    static Item[] defaults(Context context) {
         Item[] items = new Item[ORDER.length];
         for (int i = 0; i < ORDER.length; i++) items[i] = new Item(ORDER[i]);
 
         Item weather = items[0];
-        weather.title = "北京";
+        weather.title = context.getString(R.string.weather_default_city);
 
         Item address = items[1];
         address.title = "GitHub";
@@ -63,7 +63,7 @@ final class WidgetStore {
     }
 
     static Item[] load(Context context) {
-        Item[] items = defaults();
+        Item[] items = defaults(context);
         try {
             String raw = prefs(context).getString(KEY_ITEMS, "");
             if (raw == null || raw.isEmpty()) return items;

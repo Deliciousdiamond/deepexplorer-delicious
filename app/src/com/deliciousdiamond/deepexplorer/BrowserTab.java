@@ -6,7 +6,7 @@ import android.webkit.WebView;
 public final class BrowserTab {
     public final int id;
     public final WebView webView;
-    public String title = "新标签页";
+    public String title = "";
     public String url;
     public String mobileUserAgent;
     public boolean desktopMode;
