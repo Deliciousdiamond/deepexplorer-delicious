@@ -2122,7 +2122,8 @@ public class MainActivity extends Activity {
             String js = "AI.setStrings({thinking:" + JSONObject.quote(getString(R.string.ai_thinking))
                     + ",interrupted:" + JSONObject.quote(getString(R.string.ai_interrupted))
                     + ",requestFailed:" + JSONObject.quote(getString(R.string.ai_request_failed))
-                    + ",close:" + JSONObject.quote(getString(R.string.close)) + "});";
+                    + ",close:" + JSONObject.quote(getString(R.string.close))
+                    + ",emptyBody:" + JSONObject.quote(getString(R.string.ai_empty_body)) + "});";
             aiWebView.evaluateJavascript(js, null);
         } catch (Throwable ignored) {
         }
