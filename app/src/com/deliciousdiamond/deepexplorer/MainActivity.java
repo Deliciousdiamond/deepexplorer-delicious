@@ -226,7 +226,12 @@ public class MainActivity extends Activity {
     private int aiSeq;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final ExecutorService io = Executors.newSingleThreadExecutor();
-    private Dialog settingsDialog;
+    private View settingsPage;
+    private boolean settingsPageVisible;
+    private EditText settingsKeyInput;
+    private TextView settingsSizeApp;
+    private TextView settingsSizeCache;
+    private Runnable settingsStorageUpdater;
     private Dialog tabsDialog;
     private Dialog modelDialog;
     private TabAdapter tabAdapter;
@@ -302,6 +307,7 @@ public class MainActivity extends Activity {
 
     private void findViews() {
         root = findViewById(R.id.root);
+        settingsPage = findViewById(R.id.settings_page);
         homeBackground = findViewById(R.id.home_background);
         homeBgImage = findViewById(R.id.home_bg_image);
         homeBgImage.setLayoutParams(new FrameLayout.LayoutParams(
@@ -349,6 +355,7 @@ public class MainActivity extends Activity {
     }
 
     private void bindUi() {
+        setupSettingsPage();
         enginePicker.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -4339,100 +4346,104 @@ public class MainActivity extends Activity {
                 .show();
     }
 
-    private void showSettings(boolean focusKey) {
-        if (settingsDialog != null && settingsDialog.isShowing()) return;
-        final Dialog dialog = new Dialog(this);
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialog.setContentView(R.layout.dialog_settings);
-        dialog.setCanceledOnTouchOutside(true);
-        settingsDialog = dialog;
-
-        dialog.findViewById(R.id.settings_close).setOnClickListener(new View.OnClickListener() {
+    private void setupSettingsPage() {
+        if (settingsPage == null) return;
+        settingsPage.setVisibility(View.GONE);
+        settingsKeyInput = settingsPage.findViewById(R.id.settings_key);
+        settingsSizeApp = settingsPage.findViewById(R.id.settings_size_app);
+        settingsSizeCache = settingsPage.findViewById(R.id.settings_size_cache);
+        settingsPage.findViewById(R.id.settings_close).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dialog.dismiss();
+                hideSettingsPage();
             }
         });
-        final EditText keyInput = dialog.findViewById(R.id.settings_key);
-        keyInput.setText(SettingsStore.getApiKey(this));
-        keyInput.setSelection(keyInput.getText().length());
-        if (focusKey) {
-            keyInput.requestFocus();
-        }
-        dialog.findViewById(R.id.settings_save).setOnClickListener(new View.OnClickListener() {
+        settingsPage.findViewById(R.id.settings_save).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SettingsStore.setApiKey(MainActivity.this, keyInput.getText().toString());
+                SettingsStore.setApiKey(MainActivity.this, settingsKeyInput.getText().toString());
                 Toast.makeText(MainActivity.this, R.string.key_saved, Toast.LENGTH_SHORT).show();
             }
         });
-        dialog.findViewById(R.id.settings_ai_endpoint).setOnClickListener(new View.OnClickListener() {
+        settingsPage.findViewById(R.id.settings_ai_endpoint).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dialog.dismiss();
                 showAiEndpointDialog();
             }
         });
-        dialog.findViewById(R.id.settings_widgets).setOnClickListener(new View.OnClickListener() {
+        settingsPage.findViewById(R.id.settings_widgets).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dialog.dismiss();
                 if (homeWidgets != null) homeWidgets.showManager();
             }
         });
-        final Button languageButton = dialog.findViewById(R.id.settings_language);
-        languageButton.setText(getString(R.string.language) + "："
-                + LocaleHelper.label(this, LocaleHelper.getLanguage(this)));
-        languageButton.setOnClickListener(new View.OnClickListener() {
+        settingsPage.findViewById(R.id.settings_language).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showLanguageDialog(dialog);
+                showLanguageDialog(null);
             }
         });
-        dialog.findViewById(R.id.settings_clear).setOnClickListener(new View.OnClickListener() {
+        settingsPage.findViewById(R.id.settings_clear).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 clearAllWebViewData();
                 Toast.makeText(MainActivity.this, R.string.cache_cleared, Toast.LENGTH_SHORT).show();
-                updateStorageText(dialog);
+                updateStorageText();
             }
         });
-
-        final Runnable[] updater = new Runnable[1];
-        updater[0] = new Runnable() {
+        settingsStorageUpdater = new Runnable() {
             @Override
             public void run() {
-                if (settingsDialog != dialog || !dialog.isShowing()) return;
-                updateStorageText(dialog);
-                handler.postDelayed(updater[0], 2500);
+                if (!settingsPageVisible) return;
+                updateStorageText();
+                handler.postDelayed(this, 2500);
             }
         };
-        dialog.setOnDismissListener(new android.content.DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(android.content.DialogInterface d) {
-                handler.removeCallbacks(updater[0]);
-                if (settingsDialog == dialog) settingsDialog = null;
-            }
-        });
-
-        dialog.show();
-        Window window = dialog.getWindow();
-        if (window != null) {
-            window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-            window.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
-            window.setDimAmount(0.45f);
-            window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-            DisplayMetrics dm = getResources().getDisplayMetrics();
-            window.setLayout((int) (dm.widthPixels * 0.92f), (int) (dm.heightPixels * 0.82f));
-        }
-        if (focusKey) showKeyboard(keyInput);
-        handler.post(updater[0]);
     }
 
-    private void updateStorageText(final Dialog dialog) {
-        final TextView appSize = dialog.findViewById(R.id.settings_size_app);
-        final TextView cacheSize = dialog.findViewById(R.id.settings_size_cache);
-        if (appSize == null || cacheSize == null) return;
+    private void showSettings(boolean focusKey) {
+        if (settingsPage == null) return;
+        if (!settingsPageVisible) {
+            settingsPageVisible = true;
+            settingsPage.setVisibility(View.VISIBLE);
+            settingsPage.setAlpha(0f);
+            settingsPage.animate().alpha(1f).setDuration(180).start();
+        }
+        settingsKeyInput.setText(SettingsStore.getApiKey(this));
+        settingsKeyInput.setSelection(settingsKeyInput.getText().length());
+        Button languageButton = settingsPage.findViewById(R.id.settings_language);
+        languageButton.setText(getString(R.string.language) + "："
+                + LocaleHelper.label(this, LocaleHelper.getLanguage(this)));
+        TextView about = settingsPage.findViewById(R.id.settings_about);
+        about.setText(R.string.settings_about);
+        updateStorageText();
+        handler.removeCallbacks(settingsStorageUpdater);
+        handler.post(settingsStorageUpdater);
+        if (focusKey) {
+            settingsKeyInput.requestFocus();
+            showKeyboard(settingsKeyInput);
+        } else {
+            settingsKeyInput.clearFocus();
+            hideKeyboard();
+        }
+    }
+
+    private void hideSettingsPage() {
+        if (!settingsPageVisible) return;
+        settingsPageVisible = false;
+        handler.removeCallbacks(settingsStorageUpdater);
+        hideKeyboard();
+        settingsKeyInput.clearFocus();
+        settingsPage.animate().alpha(0f).setDuration(140).withEndAction(new Runnable() {
+            @Override
+            public void run() {
+                if (!settingsPageVisible) settingsPage.setVisibility(View.GONE);
+            }
+        }).start();
+    }
+
+    private void updateStorageText() {
+        if (!settingsPageVisible || settingsSizeApp == null || settingsSizeCache == null) return;
         io.execute(new Runnable() {
             @Override
             public void run() {
@@ -4441,9 +4452,9 @@ public class MainActivity extends Activity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        if (settingsDialog != dialog || !dialog.isShowing()) return;
-                        appSize.setText(StorageUtils.format(total));
-                        cacheSize.setText(StorageUtils.format(cache) + " / 100 MB");
+                        if (!settingsPageVisible) return;
+                        settingsSizeApp.setText(StorageUtils.format(total));
+                        settingsSizeCache.setText(StorageUtils.format(cache) + " / 100 MB");
                     }
                 });
             }
@@ -4533,10 +4544,7 @@ public class MainActivity extends Activity {
             tabsDialog.dismiss();
             tabsDialog = null;
         }
-        if (settingsDialog != null) {
-            settingsDialog.dismiss();
-            settingsDialog = null;
-        }
+        handler.removeCallbacks(settingsStorageUpdater);
         if (modelDialog != null) {
             modelDialog.dismiss();
             modelDialog = null;
@@ -4617,6 +4625,10 @@ public class MainActivity extends Activity {
             menuPopup.dismiss();
             return;
         }
+        if (settingsPageVisible) {
+            hideSettingsPage();
+            return;
+        }
         if (findActive) {
             hideFindBar();
             return;
@@ -4631,10 +4643,6 @@ public class MainActivity extends Activity {
         }
         if (modelDialog != null && modelDialog.isShowing()) {
             closeModelSheet();
-            return;
-        }
-        if (settingsDialog != null && settingsDialog.isShowing()) {
-            settingsDialog.dismiss();
             return;
         }
         if (tabsDialog != null && tabsDialog.isShowing()) {

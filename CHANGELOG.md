@@ -2,6 +2,12 @@
 
 All notable changes are documented here. Version format follows `1.x.y`.
 
+## 1.12.0 — 2026-11-23
+
+- Settings is now a full-screen page with its own back button and a scrollable layout
+  instead of a modal dialog. Storage figures keep refreshing while the page is open
+  and stop when it closes.
+
 ## 1.11.0 — 2026-11-22
 
 - The UI is now localized into English, Japanese and Traditional Chinese. Settings →
