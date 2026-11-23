@@ -105,9 +105,8 @@ public class MainActivity extends Activity {
     private TextView homeAppName;
     private TextView homeTagline;
     private FrameLayout aiButton;
-    private ImageView homeMenuButton;
     private ImageView aiFab;
-    private ImageView menuButton;
+    private View navMenu;
     private LinearLayout findBar;
     private EditText findInput;
     private TextView findResult;
@@ -295,7 +294,7 @@ public class MainActivity extends Activity {
         selectedModel = SettingsStore.getModel(this);
         engines = EngineStore.all(this);
         currentEngine = EngineStore.byId(this, SettingsStore.getEngineId(this));
-        chromeHeight = dp(52);
+        chromeHeight = dp(48);
         updateEngineBadge();
         currentBackgroundType = SettingsStore.getBackgroundType(this);
         currentBackgroundUri = SettingsStore.getBackgroundUri(this);
@@ -337,9 +336,8 @@ public class MainActivity extends Activity {
         homeAppName = findViewById(R.id.home_app_name);
         homeTagline = findViewById(R.id.home_tagline);
         aiButton = findViewById(R.id.ai_button);
-        homeMenuButton = findViewById(R.id.home_menu_btn);
         aiFab = findViewById(R.id.ai_fab);
-        menuButton = findViewById(R.id.menu_btn);
+        navMenu = findViewById(R.id.nav_menu);
         findBar = findViewById(R.id.find_bar);
         findInput = findViewById(R.id.find_input);
         findResult = findViewById(R.id.find_result);
@@ -369,7 +367,7 @@ public class MainActivity extends Activity {
                 showEnginePopup();
             }
         });
-        menuButton.setOnClickListener(new View.OnClickListener() {
+        navMenu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 showPageMenu();
@@ -396,12 +394,6 @@ public class MainActivity extends Activity {
                     return true;
                 }
                 return false;
-            }
-        });
-        homeMenuButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showPageMenu();
             }
         });
         reloadIcon.setOnClickListener(new View.OnClickListener() {
@@ -892,7 +884,6 @@ public class MainActivity extends Activity {
         topBar.setVisibility(View.VISIBLE);
         homeContent.setVisibility(View.GONE);
         aiWebView.setVisibility(View.GONE);
-        homeMenuButton.setVisibility(View.GONE);
         progress.setVisibility(View.GONE);
         resetChromePosition();
         showAiFab(true);
@@ -911,7 +902,6 @@ public class MainActivity extends Activity {
         progress.setVisibility(View.GONE);
         aiWebView.setVisibility(View.GONE);
         homeContent.setVisibility(View.VISIBLE);
-        homeMenuButton.setVisibility(View.VISIBLE);
         resetChromePosition();
         aiWebView.setAlpha(1f);
         aiWebView.setTranslationY(0f);
@@ -938,7 +928,6 @@ public class MainActivity extends Activity {
         progress.setVisibility(View.GONE);
         aiWebView.setVisibility(View.VISIBLE);
         homeContent.setVisibility(View.VISIBLE);
-        homeMenuButton.setVisibility(View.GONE);
         resetChromePosition();
         searchBox.animate().cancel();
         searchBox.setAlpha(1f);
@@ -2072,8 +2061,7 @@ public class MainActivity extends Activity {
             browserFrame.setVisibility(View.VISIBLE);
             topBar.setVisibility(View.VISIBLE);
             homeContent.setVisibility(View.GONE);
-            homeMenuButton.setVisibility(View.GONE);
-            progress.setVisibility(View.GONE);
+                progress.setVisibility(View.GONE);
             resetChromePosition();
             updateChrome();
         }
@@ -3811,7 +3799,6 @@ public class MainActivity extends Activity {
     }
 
     private void showPageMenu() {
-        if (mode == Mode.AI) return;
         hideKeyboard();
         if (menuPopup != null && menuPopup.isShowing()) {
             menuPopup.dismiss();
@@ -3910,12 +3897,10 @@ public class MainActivity extends Activity {
         panel.setAlpha(0f);
         panel.setScaleX(0.94f);
         panel.setScaleY(0.94f);
-        panel.setTranslationY(-dp(6));
+        panel.setTranslationY(dp(6));
         panel.setPivotX(width);
         panel.setPivotY(0f);
-        View anchor = isBrowser ? menuButton : homeMenuButton;
-        int xoff = anchor.getWidth() - width;
-        popup.showAsDropDown(anchor, xoff, dp(6));
+        popup.showAtLocation(navMenu, Gravity.BOTTOM | Gravity.END, dp(10), dp(64));
         panel.animate().alpha(1f).scaleX(1f).scaleY(1f).translationY(0f)
                 .setDuration(210)
                 .setInterpolator(new PathInterpolator(0.2f, 0.9f, 0.2f, 1f))

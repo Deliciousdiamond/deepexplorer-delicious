@@ -2,6 +2,14 @@
 
 All notable changes are documented here. Version format follows `1.x.y`.
 
+## 2.0.0 — 2026-11-23
+
+- The three-dot menu moved from the top bar and the home header into the bottom
+  navigation as a fifth item. It opens above the nav and also works in AI mode.
+- Minimal chrome pass: 48dp top bar, 54dp bottom nav without divider or elevation,
+  22dp navigation icons, a smaller wordmark/tagline/search box and flatter widget
+  cards. The floating home menu button is gone.
+
 ## 1.12.2 — 2026-11-23
 
 - Settings and the appearance/downloads/bookmarks pages now slide in from the right
