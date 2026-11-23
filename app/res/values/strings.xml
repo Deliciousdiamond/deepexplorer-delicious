@@ -31,7 +31,7 @@
     <string name="settings_cache_note">WebView 缓存上限 100 MB · 退出应用时自动清理缓存和历史</string>
     <string name="clear_cache">一键清理缓存</string>
     <string name="cache_cleared">缓存与历史已清理</string>
-    <string name="settings_about">1.12.0</string>
+    <string name="settings_about">1.12.1</string>
     <string name="key_saved">API Key 已保存</string>
     <string name="key_missing">请先在设置中填写 DeepSeek API Key</string>
     <string name="ai_error">请求失败</string>

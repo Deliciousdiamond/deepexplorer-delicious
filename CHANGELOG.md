@@ -2,6 +2,12 @@
 
 All notable changes are documented here. Version format follows `1.x.y`.
 
+## 1.12.1 — 2026-11-23
+
+- Appearance, Downloads and Bookmarks are now full-screen pages like Settings, each
+  with a back arrow and support for the system back key. Downloads keep refreshing
+  only while the page is open.
+
 ## 1.12.0 — 2026-11-23
 
 - Settings is now a full-screen page with its own back button and a scrollable layout

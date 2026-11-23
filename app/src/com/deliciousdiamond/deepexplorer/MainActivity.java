@@ -136,7 +136,6 @@ public class MainActivity extends Activity {
     private boolean bannerVisible;
     private boolean bannerOnline;
     private int bannerColor;
-    private Dialog appearanceDialog;
     private Dialog networkDiagnosticDialog;
     private LinearLayout downloadBanner;
     private ImageView downloadBannerIcon;
@@ -155,7 +154,6 @@ public class MainActivity extends Activity {
     private final Map<Long, Long> downloadLastSampleTime = new HashMap<>();
     private final Map<Long, Long> downloadSpeeds = new HashMap<>();
     private Dialog downloadConfirmDialog;
-    private Dialog downloadsDialog;
     private LinearLayout downloadsList;
     private TextView downloadsEmpty;
     private ScrollView downloadsScroll;
@@ -226,6 +224,12 @@ public class MainActivity extends Activity {
     private int aiSeq;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final ExecutorService io = Executors.newSingleThreadExecutor();
+    private View pageOverlay;
+    private TextView pageTitleView;
+    private FrameLayout pageContent;
+    private boolean pageVisible;
+    private String pageKind;
+
     private View settingsPage;
     private boolean settingsPageVisible;
     private EditText settingsKeyInput;
@@ -251,7 +255,6 @@ public class MainActivity extends Activity {
     private PopupWindow enginePopup;
     private PopupWindow menuPopup;
     private PopupWindow aiQuickPopup;
-    private Dialog bookmarksDialog;
     private boolean findActive;
 
     private int colorBg;
@@ -308,6 +311,9 @@ public class MainActivity extends Activity {
     private void findViews() {
         root = findViewById(R.id.root);
         settingsPage = findViewById(R.id.settings_page);
+        pageOverlay = findViewById(R.id.page_overlay);
+        pageTitleView = findViewById(R.id.page_title);
+        pageContent = findViewById(R.id.page_content);
         homeBackground = findViewById(R.id.home_background);
         homeBgImage = findViewById(R.id.home_bg_image);
         homeBgImage.setLayoutParams(new FrameLayout.LayoutParams(
@@ -356,6 +362,7 @@ public class MainActivity extends Activity {
 
     private void bindUi() {
         setupSettingsPage();
+        setupPageOverlay();
         enginePicker.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -2802,50 +2809,28 @@ public class MainActivity extends Activity {
     }
 
     private void showDownloadsDialog() {
-        if (downloadsDialog != null && downloadsDialog.isShowing()) return;
-        final Dialog dialog = new Dialog(this);
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialog.setContentView(R.layout.dialog_downloads);
-        dialog.setCancelable(true);
-        downloadsDialog = dialog;
-        downloadsList = dialog.findViewById(R.id.downloads_list);
-        downloadsEmpty = dialog.findViewById(R.id.downloads_empty);
-        downloadsScroll = dialog.findViewById(R.id.downloads_scroll);
-        dialog.findViewById(R.id.downloads_close).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialog.dismiss();
-            }
-        });
-        dialog.setOnDismissListener(new android.content.DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(android.content.DialogInterface d) {
-                handler.removeCallbacks(downloadsTickRunnable);
-                if (downloadsDialog == dialog) downloadsDialog = null;
-            }
-        });
+        if (pageVisible && "downloads".equals(pageKind)) return;
+        openPage(R.string.downloads, "downloads");
+        LinearLayout root = new LinearLayout(this);
+        root.setOrientation(LinearLayout.VERTICAL);
+        root.setPadding(dp(18), dp(6), dp(18), dp(20));
+        downloadsEmpty = new TextView(this);
+        downloadsEmpty.setText(R.string.download_empty);
+        downloadsEmpty.setTextColor(colorOnSurfaceVariant);
+        downloadsEmpty.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
+        downloadsEmpty.setGravity(Gravity.CENTER);
+        downloadsEmpty.setPadding(dp(12), dp(56), dp(12), dp(56));
+        root.addView(downloadsEmpty);
+        downloadsList = new LinearLayout(this);
+        downloadsList.setOrientation(LinearLayout.VERTICAL);
+        root.addView(downloadsList);
+        downloadsScroll = new ScrollView(this);
+        downloadsScroll.setFillViewport(true);
+        downloadsScroll.setOverScrollMode(View.OVER_SCROLL_NEVER);
+        downloadsScroll.addView(root);
+        pageContent.addView(downloadsScroll, new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         renderDownloads();
-        dialog.show();
-        Window window = dialog.getWindow();
-        if (window != null) {
-            window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-            window.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
-            window.setDimAmount(0.4f);
-            int width = getResources().getDisplayMetrics().widthPixels;
-            int height = getResources().getDisplayMetrics().heightPixels;
-            window.setLayout(Math.min((int) (width * 0.94f), dp(460)), (int) (height * 0.74f));
-            window.setGravity(Gravity.CENTER);
-        }
-        View panel = dialog.findViewById(android.R.id.content);
-        if (panel != null) {
-            panel.setAlpha(0f);
-            panel.setScaleX(0.97f);
-            panel.setScaleY(0.97f);
-            panel.animate().alpha(1f).scaleX(1f).scaleY(1f)
-                    .setDuration(220)
-                    .setInterpolator(new PathInterpolator(0.2f, 0.9f, 0.2f, 1f))
-                    .withLayer();
-        }
         handler.removeCallbacks(downloadsTickRunnable);
         handler.postDelayed(downloadsTickRunnable, 900);
     }
@@ -2853,7 +2838,7 @@ public class MainActivity extends Activity {
     private final Runnable downloadsTickRunnable = new Runnable() {
         @Override
         public void run() {
-            if (downloadsDialog == null || !downloadsDialog.isShowing()) return;
+            if (!pageVisible || !"downloads".equals(pageKind)) return;
             renderDownloads();
             handler.postDelayed(this, 900);
         }
@@ -3061,53 +3046,22 @@ public class MainActivity extends Activity {
 
     private void showAppearanceDialog() {
         if (mode == Mode.AI) return;
-        if (appearanceDialog != null && appearanceDialog.isShowing()) return;
-        final Dialog dialog = new Dialog(this);
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialog.setCancelable(true);
-        appearanceDialog = dialog;
-
-        LinearLayout panel = new LinearLayout(this);
-        panel.setOrientation(LinearLayout.VERTICAL);
-        panel.setBackgroundResource(R.drawable.bg_glass_panel);
-        panel.setPadding(dp(16), dp(13), dp(12), dp(16));
-
-        LinearLayout header = new LinearLayout(this);
-        header.setOrientation(LinearLayout.HORIZONTAL);
-        header.setGravity(Gravity.CENTER_VERTICAL);
-        TextView title = new TextView(this);
-        title.setText(R.string.appearance);
-        title.setTextColor(colorOnSurface);
-        title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
-        title.setTypeface(Typeface.DEFAULT_BOLD);
-        title.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-        header.addView(title);
-        ImageView close = new ImageView(this);
-        close.setLayoutParams(new LinearLayout.LayoutParams(dp(40), dp(40)));
-        close.setPadding(dp(10), dp(10), dp(10), dp(10));
-        close.setImageResource(R.drawable.ic_close);
-        close.setImageTintList(android.content.res.ColorStateList.valueOf(colorOnSurfaceVariant));
-        close.setBackgroundResource(R.drawable.bg_icon_ripple);
-        close.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialog.dismiss();
-            }
-        });
-        header.addView(close);
-        panel.addView(header);
-
+        openPage(R.string.appearance, "appearance");
         ScrollView scroll = new ScrollView(this);
-        int screenHeight = getResources().getDisplayMetrics().heightPixels;
-        scroll.setLayoutParams(new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, Math.min(dp(470), screenHeight - dp(190))));
+        scroll.setFillViewport(true);
+        scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);
         LinearLayout content = new LinearLayout(this);
         content.setOrientation(LinearLayout.VERTICAL);
+        content.setPadding(dp(18), dp(4), dp(18), dp(24));
         scroll.addView(content);
-        panel.addView(scroll);
+        pageContent.addView(scroll, new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+        buildAppearanceContent(content);
+    }
 
+    private void buildAppearanceContent(LinearLayout content) {
         addAppearanceLabel(content, getString(R.string.theme_color));
-        addThemeSwatches(content, dialog);
+        addThemeSwatches(content);
 
         addAppearanceLabel(content, getString(R.string.home_background));
         addBackgroundRow(content, getString(R.string.background_default),
@@ -3119,7 +3073,6 @@ public class MainActivity extends Activity {
                         SettingsStore.setBackgroundType(MainActivity.this, "none");
                         SettingsStore.setBackgroundUri(MainActivity.this, "");
                         loadHomeBackground();
-                        dialog.dismiss();
                         showAppearanceDialog();
                     }
                 });
@@ -3127,38 +3080,12 @@ public class MainActivity extends Activity {
                 "image".equals(currentBackgroundType), new Runnable() {
                     @Override
                     public void run() {
-                        dialog.dismiss();
                         pickBackground();
                     }
                 });
 
         addAppearanceLabel(content, getString(R.string.font_label));
-        addFontRows(content, dialog);
-
-        dialog.setContentView(panel);
-        dialog.setOnDismissListener(new android.content.DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(android.content.DialogInterface d) {
-                if (appearanceDialog == dialog) appearanceDialog = null;
-            }
-        });
-        dialog.show();
-        Window window = dialog.getWindow();
-        if (window != null) {
-            window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-            window.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
-            window.setDimAmount(0.3f);
-            window.setLayout(Math.min(dp(380), getResources().getDisplayMetrics().widthPixels - dp(32)),
-                    ViewGroup.LayoutParams.WRAP_CONTENT);
-            window.setGravity(Gravity.CENTER);
-        }
-        panel.setAlpha(0f);
-        panel.setScaleX(0.97f);
-        panel.setScaleY(0.97f);
-        panel.animate().alpha(1f).scaleX(1f).scaleY(1f)
-                .setDuration(230)
-                .setInterpolator(new PathInterpolator(0.2f, 0.9f, 0.2f, 1f))
-                .withLayer();
+        addFontRows(content);
     }
 
     private void addAppearanceLabel(LinearLayout content, String text) {
@@ -3175,7 +3102,7 @@ public class MainActivity extends Activity {
         content.addView(label);
     }
 
-    private void addThemeSwatches(LinearLayout content, final Dialog dialog) {
+    private void addThemeSwatches(LinearLayout content) {
         String current = SettingsStore.getThemeId(this);
         boolean night = (getResources().getConfiguration().uiMode
                 & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
@@ -3220,7 +3147,6 @@ public class MainActivity extends Activity {
                 public void onClick(View v) {
                     SettingsStore.setThemeId(MainActivity.this, id);
                     applyTheme();
-                    dialog.dismiss();
                     showAppearanceDialog();
                 }
             });
@@ -3261,7 +3187,7 @@ public class MainActivity extends Activity {
         content.addView(row);
     }
 
-    private void addFontRows(LinearLayout content, final Dialog dialog) {
+    private void addFontRows(LinearLayout content) {
         String current = SettingsStore.getFontId(this);
         for (int i = 0; i < FONT_IDS.length; i++) {
             final String id = FONT_IDS[i];
@@ -3300,7 +3226,6 @@ public class MainActivity extends Activity {
                 public void onClick(View v) {
                     SettingsStore.setFontId(MainActivity.this, id);
                     applyFont();
-                    dialog.dismiss();
                     showAppearanceDialog();
                 }
             });
@@ -3498,6 +3423,7 @@ public class MainActivity extends Activity {
         SettingsStore.setBackgroundType(this, currentBackgroundType);
         SettingsStore.setBackgroundUri(this, currentBackgroundUri);
         loadHomeBackground();
+        if (pageVisible && "appearance".equals(pageKind)) showAppearanceDialog();
         Toast.makeText(this, R.string.background_applied, Toast.LENGTH_SHORT).show();
     }
 
@@ -3614,10 +3540,6 @@ public class MainActivity extends Activity {
         if (downloadConfirmDialog != null) {
             downloadConfirmDialog.dismiss();
             downloadConfirmDialog = null;
-        }
-        if (downloadsDialog != null) {
-            downloadsDialog.dismiss();
-            downloadsDialog = null;
         }
         handler.removeCallbacks(downloadPollRunnable);
         handler.removeCallbacks(downloadsTickRunnable);
@@ -4061,143 +3983,84 @@ public class MainActivity extends Activity {
     }
 
     private void showBookmarks() {
-        if (bookmarksDialog != null && bookmarksDialog.isShowing()) return;
-        final Dialog dialog = new Dialog(this);
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialog.setCancelable(true);
-        bookmarksDialog = dialog;
-
-        LinearLayout panel = new LinearLayout(this);
-        panel.setOrientation(LinearLayout.VERTICAL);
-        panel.setBackgroundResource(R.drawable.bg_glass_panel);
-        panel.setPadding(dp(16), dp(12), dp(12), dp(16));
-
-        LinearLayout header = new LinearLayout(this);
-        header.setOrientation(LinearLayout.HORIZONTAL);
-        header.setGravity(Gravity.CENTER_VERTICAL);
-        TextView title = new TextView(this);
-        title.setText(R.string.bookmarks);
-        title.setTextColor(colorOnSurface);
-        title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 19);
-        title.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
-        title.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-        header.addView(title);
-        ImageView close = new ImageView(this);
-        close.setLayoutParams(new LinearLayout.LayoutParams(dp(40), dp(40)));
-        close.setPadding(dp(10), dp(10), dp(10), dp(10));
-        close.setImageResource(R.drawable.ic_close);
-        close.setImageTintList(android.content.res.ColorStateList.valueOf(colorOnSurfaceVariant));
-        close.setBackgroundResource(R.drawable.bg_icon_ripple);
-        close.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialog.dismiss();
-            }
-        });
-        header.addView(close);
-        panel.addView(header);
-
-        final List<BookmarkStore.Item> items = BookmarkStore.list(this);
+        openPage(R.string.bookmarks, "bookmarks");
         ScrollView scroll = new ScrollView(this);
-        int listHeight = Math.min(dp(360), Math.max(dp(76), items.size() * dp(64) + dp(8)));
-        scroll.setLayoutParams(new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, listHeight));
+        scroll.setFillViewport(true);
+        scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);
         LinearLayout list = new LinearLayout(this);
         list.setOrientation(LinearLayout.VERTICAL);
+        list.setPadding(dp(18), dp(6), dp(18), dp(24));
         scroll.addView(list);
-        panel.addView(scroll);
+        pageContent.addView(scroll, new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
 
+        final List<BookmarkStore.Item> items = BookmarkStore.list(this);
         if (items.isEmpty()) {
             TextView empty = new TextView(this);
             empty.setText(R.string.bookmarks_empty);
             empty.setTextColor(colorOnSurfaceVariant);
             empty.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
             empty.setGravity(Gravity.CENTER);
-            empty.setPadding(dp(12), dp(22), dp(12), dp(22));
+            empty.setPadding(dp(12), dp(48), dp(12), dp(48));
             list.addView(empty);
-        } else {
-            for (final BookmarkStore.Item item : items) {
-                LinearLayout row = new LinearLayout(this);
-                row.setOrientation(LinearLayout.HORIZONTAL);
-                row.setGravity(Gravity.CENTER_VERTICAL);
-                row.setPadding(dp(11), dp(8), dp(5), dp(8));
-                row.setBackgroundResource(R.drawable.bg_engine_cell);
-                LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                rowParams.bottomMargin = dp(4);
-                row.setLayoutParams(rowParams);
-
-                LinearLayout textCol = new LinearLayout(this);
-                textCol.setOrientation(LinearLayout.VERTICAL);
-                textCol.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-                TextView name = new TextView(this);
-                name.setText(item.title);
-                name.setTextColor(colorOnSurface);
-                name.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13.5f);
-                name.setSingleLine(true);
-                name.setEllipsize(android.text.TextUtils.TruncateAt.END);
-                textCol.addView(name);
-                TextView url = new TextView(this);
-                url.setText(item.url);
-                url.setTextColor(colorOnSurfaceVariant);
-                url.setTextSize(TypedValue.COMPLEX_UNIT_SP, 10.5f);
-                url.setSingleLine(true);
-                url.setEllipsize(android.text.TextUtils.TruncateAt.MIDDLE);
-                url.setPadding(0, dp(2), 0, 0);
-                textCol.addView(url);
-                row.addView(textCol);
-
-                ImageView delete = new ImageView(this);
-                delete.setLayoutParams(new LinearLayout.LayoutParams(dp(36), dp(36)));
-                delete.setPadding(dp(9), dp(9), dp(9), dp(9));
-                delete.setImageResource(R.drawable.ic_trash);
-                delete.setImageTintList(android.content.res.ColorStateList.valueOf(colorOnSurfaceVariant));
-                delete.setBackgroundResource(R.drawable.bg_icon_ripple);
-                delete.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        BookmarkStore.remove(MainActivity.this, item.url);
-                        dialog.dismiss();
-                        showBookmarks();
-                    }
-                });
-                row.addView(delete);
-
-                row.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        dialog.dismiss();
-                        loadUrlInCurrent(item.url);
-                    }
-                });
-                list.addView(row);
-            }
+            return;
         }
 
-        dialog.setContentView(panel);
-        dialog.setOnDismissListener(new android.content.DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(android.content.DialogInterface d) {
-                if (bookmarksDialog == dialog) bookmarksDialog = null;
-            }
-        });
-        dialog.show();
-        Window window = dialog.getWindow();
-        if (window != null) {
-            window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-            window.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
-            window.setDimAmount(0.35f);
-            window.setLayout(Math.min(dp(360), getResources().getDisplayMetrics().widthPixels - dp(32)),
-                    ViewGroup.LayoutParams.WRAP_CONTENT);
-            window.setGravity(Gravity.CENTER);
+        for (final BookmarkStore.Item item : items) {
+            LinearLayout row = new LinearLayout(this);
+            row.setOrientation(LinearLayout.HORIZONTAL);
+            row.setGravity(Gravity.CENTER_VERTICAL);
+            row.setPadding(dp(11), dp(8), dp(5), dp(8));
+            row.setBackgroundResource(R.drawable.bg_engine_cell);
+            LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            rowParams.bottomMargin = dp(6);
+            row.setLayoutParams(rowParams);
+
+            LinearLayout textCol = new LinearLayout(this);
+            textCol.setOrientation(LinearLayout.VERTICAL);
+            textCol.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+            TextView name = new TextView(this);
+            name.setText(item.title);
+            name.setTextColor(colorOnSurface);
+            name.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+            name.setSingleLine(true);
+            name.setEllipsize(android.text.TextUtils.TruncateAt.END);
+            textCol.addView(name);
+            TextView url = new TextView(this);
+            url.setText(item.url);
+            url.setTextColor(colorOnSurfaceVariant);
+            url.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
+            url.setSingleLine(true);
+            url.setEllipsize(android.text.TextUtils.TruncateAt.MIDDLE);
+            url.setPadding(0, dp(2), 0, 0);
+            textCol.addView(url);
+            row.addView(textCol);
+
+            ImageView delete = new ImageView(this);
+            delete.setLayoutParams(new LinearLayout.LayoutParams(dp(36), dp(36)));
+            delete.setPadding(dp(9), dp(9), dp(9), dp(9));
+            delete.setImageResource(R.drawable.ic_trash);
+            delete.setImageTintList(android.content.res.ColorStateList.valueOf(colorOnSurfaceVariant));
+            delete.setBackgroundResource(R.drawable.bg_icon_ripple);
+            delete.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    BookmarkStore.remove(MainActivity.this, item.url);
+                    showBookmarks();
+                }
+            });
+            row.addView(delete);
+
+            row.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    closePage();
+                    loadUrlInCurrent(item.url);
+                }
+            });
+            list.addView(row);
         }
-        panel.setAlpha(0f);
-        panel.setScaleX(0.96f);
-        panel.setScaleY(0.96f);
-        panel.animate().alpha(1f).scaleX(1f).scaleY(1f)
-                .setDuration(220)
-                .setInterpolator(new PathInterpolator(0.2f, 0.9f, 0.2f, 1f))
-                .withLayer();
     }
 
     private void toggleDesktopMode() {
@@ -4344,6 +4207,42 @@ public class MainActivity extends Activity {
                         })
                 .setNegativeButton(R.string.cancel, null)
                 .show();
+    }
+
+    private void setupPageOverlay() {
+        if (pageOverlay == null) return;
+        pageOverlay.setVisibility(View.GONE);
+        pageOverlay.findViewById(R.id.page_back).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                closePage();
+            }
+        });
+    }
+
+    private void openPage(int titleRes, String kind) {
+        if (pageOverlay == null) return;
+        hideKeyboard();
+        pageKind = kind;
+        pageVisible = true;
+        pageTitleView.setText(titleRes);
+        pageContent.removeAllViews();
+        pageOverlay.setVisibility(View.VISIBLE);
+        pageOverlay.setAlpha(0f);
+        pageOverlay.animate().alpha(1f).setDuration(160).start();
+    }
+
+    private void closePage() {
+        if (!pageVisible) return;
+        pageVisible = false;
+        pageKind = null;
+        handler.removeCallbacks(downloadsTickRunnable);
+        pageOverlay.animate().alpha(0f).setDuration(130).withEndAction(new Runnable() {
+            @Override
+            public void run() {
+                if (!pageVisible) pageOverlay.setVisibility(View.GONE);
+            }
+        }).start();
     }
 
     private void setupSettingsPage() {
@@ -4545,6 +4444,7 @@ public class MainActivity extends Activity {
             tabsDialog = null;
         }
         handler.removeCallbacks(settingsStorageUpdater);
+        handler.removeCallbacks(downloadsTickRunnable);
         if (modelDialog != null) {
             modelDialog.dismiss();
             modelDialog = null;
@@ -4561,21 +4461,9 @@ public class MainActivity extends Activity {
             aiQuickPopup.dismiss();
             aiQuickPopup = null;
         }
-        if (bookmarksDialog != null) {
-            bookmarksDialog.dismiss();
-            bookmarksDialog = null;
-        }
-        if (appearanceDialog != null) {
-            appearanceDialog.dismiss();
-            appearanceDialog = null;
-        }
         if (networkDiagnosticDialog != null) {
             networkDiagnosticDialog.dismiss();
             networkDiagnosticDialog = null;
-        }
-        if (downloadsDialog != null) {
-            downloadsDialog.dismiss();
-            downloadsDialog = null;
         }
         if (downloadConfirmDialog != null) {
             downloadConfirmDialog.dismiss();
@@ -4629,16 +4517,12 @@ public class MainActivity extends Activity {
             hideSettingsPage();
             return;
         }
+        if (pageVisible) {
+            closePage();
+            return;
+        }
         if (findActive) {
             hideFindBar();
-            return;
-        }
-        if (appearanceDialog != null && appearanceDialog.isShowing()) {
-            appearanceDialog.dismiss();
-            return;
-        }
-        if (bookmarksDialog != null && bookmarksDialog.isShowing()) {
-            bookmarksDialog.dismiss();
             return;
         }
         if (modelDialog != null && modelDialog.isShowing()) {
