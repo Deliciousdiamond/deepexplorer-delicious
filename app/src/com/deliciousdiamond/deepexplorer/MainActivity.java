@@ -107,6 +107,7 @@ public class MainActivity extends Activity {
     private FrameLayout aiButton;
     private ImageView aiFab;
     private View navMenu;
+    private ImageView menuIcon;
     private LinearLayout findBar;
     private EditText findInput;
     private TextView findResult;
@@ -338,6 +339,7 @@ public class MainActivity extends Activity {
         aiButton = findViewById(R.id.ai_button);
         aiFab = findViewById(R.id.ai_fab);
         navMenu = findViewById(R.id.nav_menu);
+        menuIcon = findViewById(R.id.icon_menu);
         findBar = findViewById(R.id.find_bar);
         findInput = findViewById(R.id.find_input);
         findResult = findViewById(R.id.find_result);
@@ -3891,6 +3893,9 @@ public class MainActivity extends Activity {
             @Override
             public void onDismiss() {
                 menuPopup = null;
+                if (menuIcon != null) {
+                    menuIcon.setImageTintList(android.content.res.ColorStateList.valueOf(colorOnSurfaceVariant));
+                }
             }
         });
         menuPopup = popup;
@@ -3900,7 +3905,11 @@ public class MainActivity extends Activity {
         panel.setTranslationY(dp(6));
         panel.setPivotX(width);
         panel.setPivotY(0f);
-        popup.showAtLocation(navMenu, Gravity.BOTTOM | Gravity.END, dp(10), dp(64));
+        // Keep a clear gap above the 54dp bottom nav so the menu button stays tappable.
+        popup.showAtLocation(navMenu, Gravity.BOTTOM | Gravity.END, dp(10), dp(90));
+        if (menuIcon != null) {
+            menuIcon.setImageTintList(android.content.res.ColorStateList.valueOf(colorPrimary));
+        }
         panel.animate().alpha(1f).scaleX(1f).scaleY(1f).translationY(0f)
                 .setDuration(210)
                 .setInterpolator(new PathInterpolator(0.2f, 0.9f, 0.2f, 1f))

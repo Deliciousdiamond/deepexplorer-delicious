@@ -2,6 +2,12 @@
 
 All notable changes are documented here. Version format follows `1.x.y`.
 
+## 2.0.1 — 2026-11-23
+
+- The bottom menu popup now leaves a clear gap above the navigation bar, so the menu
+  button stays tappable and can close the menu again. The icon is tinted while the
+  menu is open.
+
 ## 2.0.0 — 2026-11-23
 
 - The three-dot menu moved from the top bar and the home header into the bottom
