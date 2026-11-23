@@ -4222,14 +4222,19 @@ public class MainActivity extends Activity {
 
     private void openPage(int titleRes, String kind) {
         if (pageOverlay == null) return;
+        boolean same = pageVisible && kind != null && kind.equals(pageKind);
         hideKeyboard();
         pageKind = kind;
         pageVisible = true;
         pageTitleView.setText(titleRes);
         pageContent.removeAllViews();
-        pageOverlay.setVisibility(View.VISIBLE);
-        pageOverlay.setAlpha(0f);
-        pageOverlay.animate().alpha(1f).setDuration(160).start();
+        if (same) {
+            pageOverlay.setVisibility(View.VISIBLE);
+            pageOverlay.setAlpha(1f);
+            pageOverlay.setTranslationX(0f);
+            return;
+        }
+        enterPage(pageOverlay);
     }
 
     private void closePage() {
@@ -4237,12 +4242,43 @@ public class MainActivity extends Activity {
         pageVisible = false;
         pageKind = null;
         handler.removeCallbacks(downloadsTickRunnable);
-        pageOverlay.animate().alpha(0f).setDuration(130).withEndAction(new Runnable() {
+        exitPage(pageOverlay, new Runnable() {
             @Override
             public void run() {
-                if (!pageVisible) pageOverlay.setVisibility(View.GONE);
+                if (!pageVisible) {
+                    pageOverlay.setVisibility(View.GONE);
+                    pageOverlay.setTranslationX(0f);
+                }
             }
-        }).start();
+        });
+    }
+
+    /** Slides a full-screen page in from the right while fading it in. */
+    private void enterPage(final View page) {
+        page.animate().cancel();
+        page.setVisibility(View.VISIBLE);
+        page.setAlpha(0f);
+        page.setTranslationX(dp(26));
+        page.animate().alpha(1f).translationX(0f)
+                .setDuration(220)
+                .setInterpolator(new PathInterpolator(0.2f, 0.9f, 0.2f, 1f))
+                .withLayer()
+                .start();
+    }
+
+    /** Fades a page out to the right; {@code onHidden} runs once the animation ends. */
+    private void exitPage(final View page, final Runnable onHidden) {
+        page.animate().cancel();
+        page.animate().alpha(0f).translationX(dp(26))
+                .setDuration(170)
+                .setInterpolator(new PathInterpolator(0.4f, 0f, 1f, 1f))
+                .withEndAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (onHidden != null) onHidden.run();
+                    }
+                })
+                .start();
     }
 
     private void setupSettingsPage() {
@@ -4304,9 +4340,7 @@ public class MainActivity extends Activity {
         if (settingsPage == null) return;
         if (!settingsPageVisible) {
             settingsPageVisible = true;
-            settingsPage.setVisibility(View.VISIBLE);
-            settingsPage.setAlpha(0f);
-            settingsPage.animate().alpha(1f).setDuration(180).start();
+            enterPage(settingsPage);
         }
         settingsKeyInput.setText(SettingsStore.getApiKey(this));
         settingsKeyInput.setSelection(settingsKeyInput.getText().length());
@@ -4333,12 +4367,15 @@ public class MainActivity extends Activity {
         handler.removeCallbacks(settingsStorageUpdater);
         hideKeyboard();
         settingsKeyInput.clearFocus();
-        settingsPage.animate().alpha(0f).setDuration(140).withEndAction(new Runnable() {
+        exitPage(settingsPage, new Runnable() {
             @Override
             public void run() {
-                if (!settingsPageVisible) settingsPage.setVisibility(View.GONE);
+                if (!settingsPageVisible) {
+                    settingsPage.setVisibility(View.GONE);
+                    settingsPage.setTranslationX(0f);
+                }
             }
-        }).start();
+        });
     }
 
     private void updateStorageText() {

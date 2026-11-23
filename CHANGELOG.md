@@ -2,6 +2,11 @@
 
 All notable changes are documented here. Version format follows `1.x.y`.
 
+## 1.12.2 — 2026-11-23
+
+- Settings and the appearance/downloads/bookmarks pages now slide in from the right
+  while fading in, and fade out to the right when closed.
+
 ## 1.12.1 — 2026-11-23
 
 - Appearance, Downloads and Bookmarks are now full-screen pages like Settings, each
