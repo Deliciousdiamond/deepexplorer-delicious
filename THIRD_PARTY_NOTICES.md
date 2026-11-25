@@ -29,3 +29,19 @@ philosophy categories).
   account, location or device data in the request.
 - The most recent 24 quotes are cached locally, and the app keeps a small built-in
   fallback list for offline use.
+
+## airport-data.com
+
+When the weather city is exactly three letters, the app asks
+https://airport-data.com/api/ap_info.json to see whether it is an IATA airport code.
+
+- No API key is required; the request contains only the three-letter code.
+- If no airport is found, the input falls back to the city geocoder.
+
+## MET Norway (api.met.no)
+
+Used as a keyless fallback weather source when wttr.in is unavailable.
+
+- Service: https://api.met.no/
+- No API key is required; the request contains only the resolved latitude/longitude.
+- Data is cached locally with the same 30-minute weather TTL.
