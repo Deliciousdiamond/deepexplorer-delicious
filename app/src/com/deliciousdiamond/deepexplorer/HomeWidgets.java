@@ -179,6 +179,14 @@ final class HomeWidgets {
         boolean failed = weatherErrorCity != null && weatherErrorCity.equals(city)
                 && System.currentTimeMillis() - weatherErrorAt < WEATHER_RETRY_MS;
 
+        if (weather != null && weather.city.equals(city) && !weather.place.isEmpty()) {
+            TextView placeView = text(weather.place, 10f, color(R.color.on_surface_variant), false);
+            placeView.setPadding(0, dp(3), 0, 0);
+            placeView.setMaxLines(2);
+            placeView.setEllipsize(TextUtils.TruncateAt.END);
+            card.addView(placeView);
+        }
+
         LinearLayout row = new LinearLayout(activity);
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.BOTTOM);
@@ -493,8 +501,7 @@ final class HomeWidgets {
                         Toast.makeText(activity, R.string.widget_weather_city_hint, Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    validateCityAndSave(item, a, dialog);
-                    return;
+                    item.title = a;
                 } else if (WidgetStore.ADDRESS.equals(item.type)) {
                     if (!b.startsWith("http://") && !b.startsWith("https://")) {
                         Toast.makeText(activity, R.string.widget_address_invalid, Toast.LENGTH_SHORT).show();
@@ -525,52 +532,6 @@ final class HomeWidgets {
         styleDialog(dialog, 0.92f, ViewGroup.LayoutParams.WRAP_CONTENT);
     }
 
-    /** Checks the city against the geocoder before committing it, so a typo cannot
-     *  silently turn into weather for an unrelated place. */
-    private void validateCityAndSave(final WidgetStore.Item item, final String city,
-                                     final Dialog dialog) {
-        final Button save = dialog.findViewById(R.id.widget_edit_save);
-        save.setEnabled(false);
-        Toast.makeText(activity, R.string.widget_weather_checking, Toast.LENGTH_SHORT).show();
-        io.execute(new Runnable() {
-            @Override
-            public void run() {
-                WeatherFetch result = null;
-                try {
-                    result = fetchWeather(city);
-                } catch (Throwable ignored) {
-                }
-                final WeatherFetch fetched = result;
-                main.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        save.setEnabled(true);
-                        if (destroyed) return;
-                        if (fetched == null) {
-                            Toast.makeText(activity, R.string.widget_weather_network,
-                                    Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-                        if (fetched.cityNotFound) {
-                            Toast.makeText(activity, R.string.widget_weather_city_not_found,
-                                    Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-                        item.title = city;
-                        WidgetStore.save(activity, items);
-                        if (fetched.weather != null) saveWeather(fetched.weather);
-                        weatherErrorCity = null;
-                        weatherErrorAt = 0L;
-                        weatherErrorCode = WEATHER_ERROR_NONE;
-                        updateManagerSummaries();
-                        refresh();
-                        dialog.dismiss();
-                    }
-                });
-            }
-        });
-    }
-
     private void setFieldHeight(View view, int height) {
         ViewGroup.LayoutParams params = view.getLayoutParams();
         if (params != null) {
@@ -596,7 +557,14 @@ final class HomeWidgets {
         String city = "";
         double temperature;
         String description = "";
+        String place = "";
         long time;
+    }
+
+    private static final class GeoPlace {
+        double latitude;
+        double longitude;
+        String note = "";
     }
 
     private void loadWeather(final WidgetStore.Item item) {
@@ -648,34 +616,154 @@ final class HomeWidgets {
 
     private WeatherFetch fetchWeather(String city) throws Exception {
         WeatherFetch result = new WeatherFetch();
-        double[] coordinates = geocodeCity(city);
-        if (coordinates == null) {
+        GeoPlace place = resolvePlace(city);
+        if (place == null) {
             result.cityNotFound = true;
             return result;
         }
-        // wttr.in accepts a "lat,lon" path and needs no API key. Asking by coordinate
-        // avoids its own weak geocoder silently picking a different place for a
-        // misspelled or unknown city.
-        String url = String.format(Locale.US,
-                "https://wttr.in/%.4f,%.4f?format=j1", coordinates[0], coordinates[1]);
-        JSONObject root = new JSONObject(httpGet(url, 256 * 1024));
-        JSONArray conditions = root.optJSONArray("current_condition");
-        if (conditions == null || conditions.length() == 0) return result;
-        JSONObject current = conditions.optJSONObject(0);
-        if (current == null) return result;
-        double temperature = current.optDouble("temp_C", Double.NaN);
-        if (Double.isNaN(temperature)) return result;
-        Weather weather = new Weather();
+        Weather weather = null;
+        try {
+            weather = fetchWttr(place);
+        } catch (Throwable ignored) {
+            // fall through to the secondary source
+        }
+        if (weather == null) weather = fetchMetNo(place);
+        if (weather == null) return result;
         weather.city = city;
-        weather.temperature = temperature;
-        weather.description = describeWeather(current.optInt("weatherCode", -1));
-        weather.time = System.currentTimeMillis();
+        weather.place = place.note;
         result.weather = weather;
         return result;
     }
 
-    /** Resolves a city name; a null result means the geocoder knows no such place. */
-    private double[] geocodeCity(String city) throws Exception {
+    private Weather fetchWttr(GeoPlace place) throws Exception {
+        // wttr.in accepts a "lat,lon" path and needs no API key. Asking by coordinate
+        // avoids its own weak geocoder silently picking a different place.
+        String url = String.format(Locale.US,
+                "https://wttr.in/%.4f,%.4f?format=j1", place.latitude, place.longitude);
+        JSONObject root = new JSONObject(httpGet(url, 256 * 1024));
+        JSONArray conditions = root.optJSONArray("current_condition");
+        if (conditions == null || conditions.length() == 0) return null;
+        JSONObject current = conditions.optJSONObject(0);
+        if (current == null) return null;
+        double temperature = current.optDouble("temp_C", Double.NaN);
+        if (Double.isNaN(temperature)) return null;
+        Weather weather = new Weather();
+        weather.temperature = temperature;
+        weather.description = describeWeather(current.optInt("weatherCode", -1));
+        weather.time = System.currentTimeMillis();
+        return weather;
+    }
+
+    /** Keyless fallback when wttr.in is unavailable. */
+    private Weather fetchMetNo(GeoPlace place) throws Exception {
+        String url = String.format(Locale.US,
+                "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=%.4f&lon=%.4f",
+                place.latitude, place.longitude);
+        JSONObject root = new JSONObject(httpGet(url, 256 * 1024));
+        JSONObject properties = root.optJSONObject("properties");
+        JSONArray series = properties == null ? null : properties.optJSONArray("timeseries");
+        if (series == null || series.length() == 0) return null;
+        JSONObject first = series.optJSONObject(0);
+        if (first == null) return null;
+        JSONObject data = first.optJSONObject("data");
+        if (data == null) return null;
+        JSONObject instant = data.optJSONObject("instant");
+        JSONObject details = instant == null ? null : instant.optJSONObject("details");
+        if (details == null) return null;
+        double temperature = details.optDouble("air_temperature", Double.NaN);
+        if (Double.isNaN(temperature)) return null;
+        String symbol = "";
+        JSONObject next = data.optJSONObject("next_1_hours");
+        if (next != null) {
+            JSONObject summary = next.optJSONObject("summary");
+            if (summary != null) symbol = summary.optString("symbol_code", "");
+        }
+        Weather weather = new Weather();
+        weather.temperature = temperature;
+        weather.description = describeMetNo(symbol);
+        weather.time = System.currentTimeMillis();
+        return weather;
+    }
+
+    private String describeMetNo(String symbol) {
+        String code = symbol == null ? "" : symbol.toLowerCase(Locale.US);
+        if (code.contains("thunder")) return activity.getString(R.string.weather_thunder);
+        if (code.contains("heavysnow")) return activity.getString(R.string.weather_heavy_snow);
+        if (code.contains("lightsnow")) return activity.getString(R.string.weather_light_snow);
+        if (code.contains("snow")) return activity.getString(R.string.weather_snow);
+        if (code.contains("sleet")) return activity.getString(R.string.weather_sleet);
+        if (code.contains("heavyrain")) return activity.getString(R.string.weather_heavy_rain);
+        if (code.contains("lightrain") || code.contains("drizzle")) {
+            return activity.getString(R.string.weather_light_rain);
+        }
+        if (code.contains("rain")) return activity.getString(R.string.weather_rain);
+        if (code.contains("fog")) return activity.getString(R.string.weather_fog);
+        if (code.contains("partlycloudy")) return activity.getString(R.string.weather_partly_cloudy);
+        if (code.contains("cloudy")) return activity.getString(R.string.weather_cloudy);
+        if (code.contains("fair")) return activity.getString(R.string.weather_mostly_sunny);
+        if (code.contains("clearsky")) return activity.getString(R.string.weather_sunny);
+        return activity.getString(R.string.weather_unknown);
+    }
+
+    /** Resolves a city name, with a 7-day cache; null means the geocoder knows no such place. */
+    private GeoPlace resolvePlace(String city) throws Exception {
+        SharedPreferences prefs = activity.getSharedPreferences(WEATHER_FILE, Context.MODE_PRIVATE);
+        long cachedAt = prefs.getLong("geo_time", 0L);
+        if (city.equals(prefs.getString("geo_city", ""))
+                && System.currentTimeMillis() - cachedAt < 7L * 24L * 60L * 60L * 1000L) {
+            GeoPlace cached = new GeoPlace();
+            cached.latitude = Double.longBitsToDouble(prefs.getLong("geo_lat", 0L));
+            cached.longitude = Double.longBitsToDouble(prefs.getLong("geo_lon", 0L));
+            cached.note = prefs.getString("geo_note", "");
+            return cached;
+        }
+        GeoPlace place = null;
+        if (city.matches("[A-Za-z]{3}")) {
+            place = lookupAirport(city);
+        }
+        if (place == null) {
+            place = geocodeCity(city);
+        }
+        if (place == null) return null;
+        prefs.edit().putString("geo_city", city)
+                .putLong("geo_lat", Double.doubleToLongBits(place.latitude))
+                .putLong("geo_lon", Double.doubleToLongBits(place.longitude))
+                .putString("geo_note", place.note)
+                .putLong("geo_time", System.currentTimeMillis()).apply();
+        return place;
+    }
+
+    private GeoPlace lookupAirport(String code) {
+        try {
+            String url = "https://airport-data.com/api/ap_info.json?iata="
+                    + URLEncoder.encode(code.toUpperCase(Locale.US), "UTF-8");
+            JSONObject root = new JSONObject(httpGet(url, 64 * 1024));
+            double latitude = parseDouble(root.optString("latitude", ""));
+            double longitude = parseDouble(root.optString("longitude", ""));
+            String name = root.optString("name", "").trim();
+            if (Double.isNaN(latitude) || Double.isNaN(longitude) || name.isEmpty()) return null;
+            String location = root.optString("location", "").trim();
+            String note = activity.getString(R.string.weather_airport_note,
+                    name + (location.isEmpty() ? "" : " · " + location));
+            GeoPlace place = new GeoPlace();
+            place.latitude = latitude;
+            place.longitude = longitude;
+            place.note = note;
+            return place;
+        } catch (Throwable ignored) {
+            return null;
+        }
+    }
+
+    private static double parseDouble(String value) {
+        try {
+            return Double.parseDouble(value);
+        } catch (Throwable ignored) {
+            return Double.NaN;
+        }
+    }
+
+    private GeoPlace geocodeCity(String city) throws Exception {
         String url = "https://geocoding-api.open-meteo.com/v1/search?name="
                 + URLEncoder.encode(city, "UTF-8") + "&count=1&language=zh&format=json";
         JSONObject root = new JSONObject(httpGet(url, 128 * 1024));
@@ -686,7 +774,10 @@ final class HomeWidgets {
         double latitude = place.optDouble("latitude", Double.NaN);
         double longitude = place.optDouble("longitude", Double.NaN);
         if (Double.isNaN(latitude) || Double.isNaN(longitude)) return null;
-        return new double[]{latitude, longitude};
+        GeoPlace result = new GeoPlace();
+        result.latitude = latitude;
+        result.longitude = longitude;
+        return result;
     }
 
     /** Maps the WWO condition codes returned by wttr.in to short Chinese labels. */
@@ -718,8 +809,8 @@ final class HomeWidgets {
         InputStream input = null;
         try {
             connection = (HttpURLConnection) new URL(url).openConnection();
-            connection.setConnectTimeout(8000);
-            connection.setReadTimeout(8000);
+            connection.setConnectTimeout(6000);
+            connection.setReadTimeout(6000);
             connection.setRequestProperty("User-Agent", "DeepExplorer/1.9");
             input = connection.getInputStream();
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -746,6 +837,7 @@ final class HomeWidgets {
         weather.city = city;
         weather.temperature = Double.longBitsToDouble(prefs.getLong("temp_bits", 0L));
         weather.description = prefs.getString("desc", "");
+        weather.place = prefs.getString("place", "");
         weather.time = time;
         return weather;
     }
@@ -755,6 +847,7 @@ final class HomeWidgets {
                 .putString("city", weather.city)
                 .putLong("temp_bits", Double.doubleToLongBits(weather.temperature))
                 .putString("desc", weather.description)
+                .putString("place", weather.place)
                 .putLong("time", weather.time)
                 .apply();
     }

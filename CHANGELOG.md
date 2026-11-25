@@ -2,6 +2,16 @@
 
 All notable changes are documented here. Version format follows `1.x.y`.
 
+## 2.0.2 — 2026-11-25
+
+- Weather city validation no longer blocks the editor: the city is saved immediately
+  and checked in the background, with failures shown on the card.
+- Three-letter inputs are treated as airport codes first (airport-data.com); the card
+  shows the airport name when one is found.
+- Added a keyless fallback weather source (MET Norway) for when wttr.in fails, a 7-day
+  place cache and shorter network timeouts.
+- Added a UX issue template.
+
 ## 2.0.1 — 2026-11-23
 
 - The bottom menu popup now leaves a clear gap above the navigation bar, so the menu
