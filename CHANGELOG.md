@@ -2,6 +2,13 @@
 
 All notable changes are documented here. Version format follows `1.x.y`.
 
+## 3.1.1 — 2026-11-27
+
+- Restored the original sparkle icon for both AI buttons while keeping the no-background
+  treatment and the reveal animation.
+- The search-box reveal fill is now a lighter tint (theme color blended 42% toward
+  white) so white text stays readable but the block feels softer.
+
 ## 3.1.0 — 2026-11-27
 
 - The AI star in the search box is now a bare line icon: no background, no border,

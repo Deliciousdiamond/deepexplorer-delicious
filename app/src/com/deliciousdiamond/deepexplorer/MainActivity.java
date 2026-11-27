@@ -1228,9 +1228,10 @@ public class MainActivity extends Activity {
 
     private void setupSearchBackground() {
         Drawable base = getDrawable(R.drawable.bg_search);
+        int fillStart = blendColor(colorPrimary, Color.WHITE, 0.42f);
+        int fillEnd = blendColor(colorAccent, Color.WHITE, 0.42f);
         GradientDrawable fill = new GradientDrawable(
-                GradientDrawable.Orientation.LEFT_RIGHT,
-                new int[]{colorPrimary, colorAccent});
+                GradientDrawable.Orientation.LEFT_RIGHT, new int[]{fillStart, fillEnd});
         fill.setCornerRadius(0f);
         searchFillClip = new ClipDrawable(fill, Gravity.RIGHT, ClipDrawable.HORIZONTAL);
         searchBox.setBackground(new LayerDrawable(new Drawable[]{base, searchFillClip}));
@@ -1238,6 +1239,15 @@ public class MainActivity extends Activity {
         searchFillClip.setLevel((int) (searchFillFraction * 10000));
         setSearchFillFraction(searchFillFraction);
         searchGradientActive = aiMode;
+    }
+
+    /** Linear blend: fraction 0 keeps the color, 1 returns white. */
+    private static int blendColor(int color, int white, float fraction) {
+        float f = Math.max(0f, Math.min(1f, fraction));
+        int r = (int) (((color >> 16) & 0xFF) + (((white >> 16) & 0xFF) - ((color >> 16) & 0xFF)) * f);
+        int g = (int) (((color >> 8) & 0xFF) + (((white >> 8) & 0xFF) - ((color >> 8) & 0xFF)) * f);
+        int b = (int) ((color & 0xFF) + ((white & 0xFF) - (color & 0xFF)) * f);
+        return Color.rgb(r, g, b);
     }
 
     private int withAlpha(int color, int alpha) {

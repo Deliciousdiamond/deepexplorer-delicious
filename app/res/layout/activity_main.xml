@@ -372,11 +372,11 @@
 
                 <ImageView
                     android:id="@+id/ai_icon"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
                     android:layout_gravity="center"
                     android:contentDescription="@null"
-                    android:src="@drawable/ic_star_line"
+                    android:src="@drawable/ic_ai_solid"
                     android:tint="@color/on_surface_variant" />
             </FrameLayout>
         </LinearLayout>
@@ -544,7 +544,7 @@
         android:elevation="0dp"
         android:focusable="true"
         android:padding="10dp"
-        android:src="@drawable/ic_star_line"
+        android:src="@drawable/ic_ai_solid"
         android:tint="@color/primary"
         android:visibility="gone" />
 
