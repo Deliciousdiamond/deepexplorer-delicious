@@ -2,6 +2,15 @@
 
 All notable changes are documented here. Version format follows `1.x.y`.
 
+## 3.3.0 — 2026-11-27
+
+- Home search AI transition redesigned: instead of a solid blue fill, a light gradient
+  wash plus a 2dp Google-style gradient border sweeps in from the right. Text stays
+  dark and readable, the star tints to the theme color, and the engine badge/divider
+  hide while AI mode is on.
+- The error page is square now: 0 radius card, icon and retry button, flat neutral
+  palette instead of the old purple rounded card.
+
 ## 3.2.0 — 2026-11-27
 
 - Frosted-glass pass: top/bottom bars, menus and dialogs use translucent gradient

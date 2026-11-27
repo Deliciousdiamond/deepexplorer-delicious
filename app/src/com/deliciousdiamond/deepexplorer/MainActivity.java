@@ -254,6 +254,8 @@ public class MainActivity extends Activity {
     private List<SearchEngine> engines;
     private TransitionDrawable searchBackground;
     private ClipDrawable searchFillClip;
+    private GradientBorderDrawable searchBorder;
+    private boolean enginePickerHidden;
     private ValueAnimator searchFillAnimator;
     private float searchFillFraction;
     private View searchDivider;
@@ -1228,13 +1230,16 @@ public class MainActivity extends Activity {
 
     private void setupSearchBackground() {
         Drawable base = getDrawable(R.drawable.bg_search);
-        int fillStart = blendColor(colorPrimary, Color.WHITE, 0.42f);
-        int fillEnd = blendColor(colorAccent, Color.WHITE, 0.42f);
-        GradientDrawable fill = new GradientDrawable(
-                GradientDrawable.Orientation.LEFT_RIGHT, new int[]{fillStart, fillEnd});
-        fill.setCornerRadius(0f);
-        searchFillClip = new ClipDrawable(fill, Gravity.RIGHT, ClipDrawable.HORIZONTAL);
+        GradientDrawable wash = new GradientDrawable(
+                GradientDrawable.Orientation.LEFT_RIGHT,
+                new int[]{blendColor(colorPrimary, Color.WHITE, 0.90f),
+                        blendColor(colorAccent, Color.WHITE, 0.87f)});
+        wash.setCornerRadius(0f);
+        searchFillClip = new ClipDrawable(wash, Gravity.RIGHT, ClipDrawable.HORIZONTAL);
         searchBox.setBackground(new LayerDrawable(new Drawable[]{base, searchFillClip}));
+        searchBorder = new GradientBorderDrawable(
+                new int[]{colorPrimary, 0xFF9B72CB, 0xFFD96570}, dp(2));
+        searchBox.setForeground(searchBorder);
         searchFillFraction = aiMode ? 1f : 0f;
         searchFillClip.setLevel((int) (searchFillFraction * 10000));
         setSearchFillFraction(searchFillFraction);
@@ -1275,33 +1280,37 @@ public class MainActivity extends Activity {
         searchFillAnimator.start();
     }
 
-    /** Applies the blue reveal fraction to the fill, text, hint, star and divider. */
+    /** Applies the reveal fraction to the wash, gradient border, star and engine picker. */
     private void setSearchFillFraction(float fraction) {
         searchFillFraction = Math.max(0f, Math.min(1f, fraction));
         if (searchFillClip != null) {
             searchFillClip.setLevel((int) (searchFillFraction * 10000));
         }
+        if (searchBorder != null) {
+            searchBorder.setFraction(searchFillFraction);
+        }
         ArgbEvaluator evaluator = new ArgbEvaluator();
-        int textColor = (Integer) evaluator.evaluate(searchFillFraction,
-                colorOnSurface, Color.WHITE);
+        int starColor = (Integer) evaluator.evaluate(searchFillFraction,
+                colorOnSurfaceVariant, colorPrimary);
         int hintColor = (Integer) evaluator.evaluate(searchFillFraction,
-                colorOnSurfaceVariant, 0xE6FFFFFF);
-        int iconColor = (Integer) evaluator.evaluate(searchFillFraction,
-                colorOnSurfaceVariant, Color.WHITE);
-        int dividerColor = (Integer) evaluator.evaluate(searchFillFraction,
-                colorOutline, 0x66FFFFFF);
+                colorOnSurfaceVariant, colorPrimary);
         if (searchInput != null) {
-            searchInput.setTextColor(textColor);
+            searchInput.setTextColor(colorOnSurface);
             searchInput.setHintTextColor(hintColor);
         }
         if (aiIcon != null) {
-            aiIcon.setImageTintList(android.content.res.ColorStateList.valueOf(iconColor));
+            aiIcon.setImageTintList(android.content.res.ColorStateList.valueOf(starColor));
         }
-        if (engineChevron != null) {
-            engineChevron.setImageTintList(android.content.res.ColorStateList.valueOf(iconColor));
-        }
-        if (searchDivider != null) {
-            searchDivider.setBackgroundColor(dividerColor);
+        boolean hideEngine = searchFillFraction > 0.02f;
+        if (hideEngine != enginePickerHidden) {
+            enginePickerHidden = hideEngine;
+            if (enginePicker != null) {
+                enginePicker.setVisibility(hideEngine ? View.GONE : View.VISIBLE);
+                enginePicker.setAlpha(1f);
+            }
+            if (searchDivider != null) {
+                searchDivider.setVisibility(hideEngine ? View.GONE : View.VISIBLE);
+            }
         }
     }
 
