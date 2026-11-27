@@ -31,7 +31,7 @@
     <string name="settings_cache_note">WebView cache limit 100 MB · cache and history are cleared on exit</string>
     <string name="clear_cache">Clear cache</string>
     <string name="cache_cleared">Cache and history cleared</string>
-    <string name="settings_about">2.0.2</string>
+    <string name="settings_about">3.0.0</string>
     <string name="key_saved">API Key saved</string>
     <string name="key_missing">Set your DeepSeek API Key in Settings first</string>
     <string name="ai_error">Request failed</string>
@@ -80,6 +80,7 @@
     <string name="font_condensed">Condensed</string>
     <string name="font_light">Light</string>
     <string name="theme_nightly">Nightly</string>
+    <string name="theme_minimal">Minimal</string>
     <string name="theme_ocean">Ocean</string>
     <string name="theme_forest">Forest</string>
     <string name="theme_sunset">Sunset</string>

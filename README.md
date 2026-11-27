@@ -1,153 +1,212 @@
-<p align="center">
-  <img src="docs/icon.svg" width="96" height="96" alt="DeepExplorer icon">
-</p>
+> **⚠️ 首要提醒**
+>
+> 在使用该项目之前，请确保您在不违法当地法律法规的情况下使用该程序（有点文绉绉的，不管了）。
 
-<h1 align="center">深探</h1>
+# 深探 / DeepExplorer
 
-<p align="center"><strong>DeepExplorer</strong></p>
+一个不到 160KB 的安卓浏览器，自带 DeepSeek 对话。（不是浏览器提供的回答！）
 
-<p align="center">
-  深探是一个偏 Nightly 视觉、带内置 DeepSeek 助手的极简 Android WebView 浏览器。<br>
-  A minimalist, glass-styled Android browser with an inline DeepSeek assistant.
-</p>
+不用 Gradle，不用 AndroidX，不用一堆依赖——纯 WebView + 原生 View 手写出来的。
+装上就能用，界面干净，能搜索、能开标签、能下载、能问 AI。
 
-<p align="center">
-  <img alt="Android 6.0+" src="https://img.shields.io/badge/Android-6.0%2B-3DDC84?logo=android&logoColor=white">
-  <img alt="No Gradle" src="https://img.shields.io/badge/build-aapt%20%2B%20javac%20%2B%20d8-6D28D9">
-  <img alt="License MIT" src="https://img.shields.io/badge/license-MIT-blue">
-</p>
+> 包名：`com.deliciousdiamond.deepexplorer`　最低系统：Android 6.0（API 23）
 
-> 应用名：深探（仓库名仍为 DeepExplorer）。项目完全使用 Android 框架 API，没有 AndroidX、Gradle、Lottie 或 WebView 壳依赖。构建脚本直接调用 `aapt`、`javac`、`d8`、`zipalign`、`apksigner`。
+---
 
-## 功能
+## 这玩意儿是啥
 
-- **WebView 浏览器**：多标签（最多 6 个）、前进/后退/主页、地址栏滚动收起、页面淡入。
-- **内置 DeepSeek 助手**：SSE 流式回复、Markdown 渲染、`deepseek-chat` / `deepseek-reasoner` 切换、浏览网页时右下角快捷入口。
-- **搜索引擎选择**：Google、Bing、DuckDuckGo、Brave、Startpage、Ecosia、Qwant、Yandex、百度、搜狗、360、神马；选择本地持久化。
-- **首页组件**：天气、地址快捷入口、便签、格言四种卡片，在「设置 → 首页组件」里开关和编辑；格言来自「一言」在线库（文学 / 诗词 / 哲学，缓存最近 24 条），断网时回落到内置格言；天气使用无需 Key 的 wttr.in。
-- **Nightly 风格视觉**：深紫/品红/靛蓝主题、半透明玻璃层、圆角搜索框、主题色与首页背景图、内置字体切换。
-- **网络状态提示**：断网红色横幅，恢复后绿色过渡 2 秒。
-- **网络环境智能诊断**：在线状态下，境外常见域名发生超时/连接/DNS 错误时，展示 MD3 风格提示，并在 5 分钟内按基础域名去重。
-- **本地错误页**：诊断触发时用 `assets/error.html` 替换系统错误页，提供「重试」。
-- **下载管理**：从网页下载文件，显示确认提示、下载横幅、实时进度/速度/文件名，并可打开已下载文件。
-- **Firefox 式工具**：书签、页面内查找、桌面版网站、分享、页面菜单。
-- **无账号、无插件、无遥测**：API Key 只保存在本机，不上传到除 DeepSeek API 以外的服务。
+手机上装一个浏览器，本来是很简单的事。但现在随便一个浏览器都几十上百兆，
+启动慢、首页塞满资讯、还老想让你登录。（没有阴阳任何大厂）
 
-## 下载 / Download
+深探就走另一个方向：**能用的功能都给你，不用的东西一个都不装。**
 
-APK 不提交到仓库。请到 GitHub **Releases** 下载（1.9.0 起包含首页组件）：
+- 安装包 160KB 左右，装完占的空间也是这个量级
+- 冷启动基本秒开
+- 没有账号系统、没有资讯流、没有推送
+- 所有数据都在本机，不联网也能翻书签和设置（不联网还想上网？）
+- 界面支持简体中文、English、日本語、繁體中文，设置里随时切换
 
-```text
-https://github.com/Deliciousdiamond/DeepExplorer/releases
-```
+顺便把 DeepSeek 塞进来了：主页搜索框一开 AI 开关，输入框就直接变成对话框，
+问完可以接着搜，不用在两个 App 之间来回切。
 
-首次使用 AI 前，在「设置」里填入自己的 DeepSeek API Key（`sk-...`）。仓库不包含任何 API Key。
-
-1.9.0 起首页支持可选组件：天气需要联网（wttr.in，无需 Key），地址卡片用来放常用网址，便签与格言完全离线。
+---
 
 ## 截图
 
-真实截图放在 [`docs/screenshots`](docs/screenshots/README.md)。发布前请先移除个人信息、API Key 和私人壁纸。
+> 3.0 界面已改为白色极简风格（8dp 方角、细边框、无玻璃渐变），旧截图不再适用，
+> 新的截图更新后补上。
 
-## 构建 / Build
+---
 
-项目不使用 Gradle，也不包含 Android SDK。你需要：
+## 功能
 
-- JDK（含 `javac` / `keytool`）
-- Android SDK Build-Tools（`aapt`、`d8`、`zipalign`、`apksigner`）
-- Android Platform 29 的 `android.jar`
-- `zip`、`bash`
+### 浏览
 
-```bash
-git clone https://github.com/Deliciousdiamond/DeepExplorer.git
-cd DeepExplorer
+- 多标签页，最多 6 个，底部「标签」按钮里能看列表、切换、关掉
+- 顶部地址条是**只读**的，想输网址回主页搜索框——这样顶栏永远清爽
+- 页面往下滑，顶栏自动收起；往上滑或者回到顶部，顶栏滑回来
+- 页面加载有淡入，切标签有轻微上浮，底部导航按下去有回弹，不花哨但舒服
+- 下拉区域不挡页面内容，网页自己的固定按钮不会被底部导航压住
 
-# 1. 生成一个本地签名密钥（不会提交到 Git）
-export KEYSTORE_PASS='choose-a-strong-password'
-./scripts/generate-keystore.sh
+### 搜索
 
-# 2. 指向 SDK 并构建
-export ANDROID_JAR="$HOME/Android/Sdk/platforms/android-29/android.jar"
-export KEYSTORE="keystore/release.jks"
-export KEY_ALIAS="release"
-./build.sh
-```
+- 12 个搜索引擎随点随换：Google、Bing、DuckDuckGo、Brave、Startpage、Ecosia、
+  Qwant、Yandex、百度、搜狗、360、神马（本浏览器不提供翻墙服务！使用国外搜索引擎请在不违反当地法规的情况下进行！）
+- 点搜索框左边的小圆点切换，不用进设置
+- 直接输入 `github.com` 会补全成 https，输入一句话会当成关键词去搜，输入 `IP:端口` 会当成本地地址
 
-产物：`build/DeepExplorer.apk`。
+### 内置 DeepSeek
 
-更详细的桌面端 / Termux 步骤、环境变量和常见错误见 [BUILDING.md](BUILDING.md)。
+- 支持 `deepseek-chat` 和 `deepseek-reasoner`，在对话面板顶部的小胶囊里切换
+- 回复是**流式**的，字一个个蹦出来，不用等整段生成完（写这个干嘛）
+- Markdown 正常渲染：标题、列表、引用、**粗体**、行内代码、代码块、链接
+- 对话上下文保留最近 12 条
+- 自己填 API Key，填一次就记住；没填会直接把你带到设置页
+- 在网页里看到想看的内容，点右下角的 AI 按钮就能直接开问，关掉回到原来的页面
 
-> 在 Termux/DSH 这类环境里，如果 `./build.sh` 提示 `bad interpreter`，改用：
+### 下载
 
-```bash
-bash build.sh
-```
+- 走系统 DownloadManager，断网、锁屏都不影响，下完有系统通知
+- 点下载链接先弹确认框，**会告诉你这个文件是哪个站点发起的**，再决定下不下
+- 开始下载时顶部弹一条蓝色横幅，下完变绿色，失败变红色，点横幅看详情
+- 下载列表里有文件名、进度条、已下/总大小、实时速度、状态
+- 下完的条目点一下就能用别的 App 打开
 
-第一次发布到 GitHub 的完整步骤见 [GITHUB_GUIDE.md](GITHUB_GUIDE.md)。
+### 外观
+
+- 6 套主题色：夜行、海洋、森林、日落、玫瑰、石墨，深色浅色都适配
+- 5 种字体：无衬线、衬线、等宽、窄体、细体，网页正文也能跟着换（代码块和图标字体不动）
+- 支持拿手机相册里的图当主页背景，1.8.1 之后大图会在后台解码并压缩到屏幕尺寸，
+  不会一选图就卡死或者闪退
+
+### 断网和报错
+
+- 断网时顶部挂一条红色横幅，恢复网络变绿色，两秒后自己消失
+- 网络回来时，停在错误页的标签会自动重载，不用手动刷新
+- 加载失败不给你看系统那张丑错误页，换成应用内的自定义错误页，带「重试」按钮
+- 断网状态下点重试不会白等，直接把你拉回红色横幅
+- 访问常见的海外站点超时/连不上时，会弹一张卡片提醒你是不是代理或 DNS 的问题，
+  同一个域名 5 分钟内只提醒一次，不骚扰
+
+### 首页组件
+
+- 设置 → 首页组件，可以把天气、地址、便签、格言四张卡片放到首页
+- 天气走 wttr.in，免 Key，30 分钟缓存，点卡片刷新；断网时给重试提示
+- 地址是常用网址快捷入口，点开直接浏览，长按卡片或进设置修改
+- 便签可点开编辑；格言来自「一言」在线库（文学 / 诗词 / 哲学），本地缓存
+  最近 24 条，断网时回落到内置句子，卡片会显示出处
+
+### 存储
+
+- 缓存上限 100MB，超了自动清缓存，**不会动你的浏览历史**
+- 设置里能看到应用数据、缓存各占多少，也能一键清空
+- 书签最多 100 条，存在本地
+
+---
+
+## 最近更新（3.x）
+
+- **3.0.0**：默认主题改为白色极简，全局平面化：8dp 方角、1dp 细边框，去掉玻璃渐变和阴影
+- **2.0.2**：天气城市保存不再等待校验；三字码识别机场；wttr.in 失败时切 MET Norway
+- **2.0.1**：修底部菜单弹层遮住导航、无法再次点击关闭的问题
+- **2.0.0**：三点菜单移到底部导航，顶栏/底栏极简重做
+- **1.12.2**：设置、外观、下载、书签页面加入滑入/滑出淡入淡出动画
+- **1.12.1**：外观、下载、书签也改成全屏页面
+- **1.12.0**：设置改为独立全屏页面，带返回键和滚动布局
+- **1.11.0**：界面支持 English / 日本語 / 繁體中文，设置里可切换或跟随系统
+- **1.10.0**：自定义搜索引擎、AI 接口设置（OpenAI 兼容）、AI 一键总结网页
+- **1.9.3**：天气城市输入先做校验，乱填不再静默显示别处天气；签名脚本显式声明 v1/v2/v3
+- **1.9.2**：格言组件接入「一言」在线库，缓存最近 24 条并保留离线兜底
+- **1.9.1**：修掉下载完成横幅一直挂着的问题——4 秒自动收起、页面下滑即收、
+  点开详情后收起，同一下载返回浏览器也不再重复弹出
+- **1.9.0**：新增首页组件；首页改为「深探」左上角、「从这里起航。」右上角；
+  搜索提示跟随当前引擎，AI 模式显示「深度求索……」；修复连续追问竞态、
+  壁纸 EXIF 方向、停止回答后的历史问题
+
+完整记录看 [CHANGELOG.md](CHANGELOG.md)。
+
+---
+
+## 安装
+
+1. 去 [Releases](https://github.com/Deliciousdiamond/deepexplorer-delicious/releases) 下载 `DeepExplorer-3.0.0.apk`
+2. 允许「安装未知来源应用」，装上即可
+
+> **签名提醒**：1.9.0 起换了新的签名密钥，从 1.8.x 直接覆盖会安装失败。
+> 需要先卸载旧版，书签、设置和 API Key 会一并清空。
+
+同一个签名可以直接覆盖安装，不用先卸载。
+**注意：卸载会清掉书签、设置和 API Key。三思而后行！**
 
 ## 项目结构
 
 ```text
-DeepExplorer/
-├── app/
-│   ├── AndroidManifest.xml
-│   ├── assets/                 # ai.html / error.html (marked inlined)
-│   ├── res/                    # layouts, drawables, strings, themes
-│   └── src/com/deliciousdiamond/deepexplorer/
-├── docs/
-│   ├── icon.svg
-│   └── screenshots/
-├── scripts/generate-keystore.sh
-├── build.sh                    # no-Gradle build
-├── BUILDING.md
-├── GITHUB_GUIDE.md
-├── CONTRIBUTING.md
-├── SECURITY.md
-├── CHANGELOG.md
-├── THIRD_PARTY_NOTICES.md
-└── LICENSE
+app/           Java 源码、资源、AI 页面（无 Gradle、无 AndroidX）
+build.sh       aapt → javac → d8 → zipalign → apksigner
+docs/          图标与截图占位
+scripts/       生成本地签名密钥的辅助脚本
 ```
 
-源码按功能拆分为：
+## 自己编译
 
-- `MainActivity.java`：浏览器壳、标签、主题、设置、书签、查找、诊断、错误页
-- `AiClient.java`：DeepSeek SSE 客户端
-- `SettingsStore.java`：本地偏好
-- `BookmarkStore.java`：本地书签
-- `SearchEngine.java`：搜索引擎表
-- `StorageUtils.java`：缓存统计与清理
+故意没用 Gradle，整个构建就是 `aapt` → `javac` → `d8` → `zipalign` → `apksigner`
+五步，一条命令跑完：
 
-## 隐私与权限
+```bash
+export ANDROID_JAR="$HOME/Android/Sdk/platforms/android-29/android.jar"
+export KEYSTORE="$PWD/keystore/release.jks"
+export KEY_ALIAS="release"
+export KEYSTORE_PASS="你的密码"
 
-| 权限 | 用途 |
-|---|---|
-| `INTERNET` | 加载网页、调用 DeepSeek API |
-| `ACCESS_NETWORK_STATE` | 网络状态横幅与诊断 |
+./build.sh
+# 产物：build/DeepExplorer.apk
+```
 
-- 不申请存储权限；主页背景图通过系统文件选择器获取持久 URI。
-- API Key 存在本机 `SharedPreferences`，不写入日志、不提交仓库。
-- 没有崩溃上报、统计、广告 SDK。
-- 应用退出时会清理 WebView 缓存和浏览历史；书签、主题和 API Key 保留。
+需要 JDK、Android build-tools、API 29 的 `android.jar`，以及一把自己的签名密钥。
+详细步骤和常见报错看 [BUILDING.md](BUILDING.md)。
 
-## 已知限制
+> 在 Termux / 手机上直接跑的话，如果 `./build.sh` 报 `bad interpreter`，改成 `bash build.sh`。
 
-- 依赖系统 WebView 版本；页面能力受设备 WebView 限制。
-- 网站字体跟随通过 WebView 字体族 + 注入 CSS 实现。CSP、Shadow DOM、跨域 iframe 等场景可能无法强制覆盖；图标字体已尽量排除。
-- 网络诊断只对常见境外域名触发，避免对普通站点误报。
-- 不提供账号、同步、插件体系。
-- 项目目前只针对 Android 10（targetSdk 29）验证，更高版本可运行但未逐一适配。
+---
 
-## 声明 / Disclaimer
+## 隐私
 
-- 本项目不是 Mozilla Firefox，也不隶属于 Mozilla；视觉风格只是对 Firefox Nightly 的致敬。
-- 网络诊断的交互参考 Microsoft Edge 的错误处理思路，不隶属于 Microsoft。
-- DeepSeek 是 DeepSeek 公司的产品；本项目只调用其公开 API，不隶属于 DeepSeek。
-- 请遵守你所在地区的法律法规以及所访问网站的服务条款。
+- 没有账号、没有统计、没有埋点、没有广告
+- 书签、设置、主题、下载记录全部存在应用私有目录
+- DeepSeek 的 API Key 也只存在本机，只在请求 `api.deepseek.com` 时带上
+- 唯一的联网行为：你自己打开的网页、你发起的 AI 请求，以及开启组件后对
+  wttr.in / api.met.no（天气）、airport-data.com（仅三字码机场查询）、v1.hitokoto.cn（格言）的查询
 
-## 参与贡献
+建议给这个 App 单独申请一个 API Key，别直接用主账号的。
 
-见 [CONTRIBUTING.md](CONTRIBUTING.md)。安全问题请按 [SECURITY.md](SECURITY.md) 私下报告，不要在公开 Issue 中贴 API Key。
+---
 
-## License
+## 已知不足
 
-[MIT](LICENSE) © 2026 Deliciousdiamond
+老实说几条，免得你踩坑：
+
+- **严格来说第一个不足是：这份 README 不是我亲手写的**（对，就是这条）
+- **标签页不持久化（重要！）**：进程被系统杀掉之后，打开的标签就没了（书签和设置不受影响）
+- `intent://` 开头的链接（一些支付、外卖、应用跳转）目前点了没反应
+- 没有广告拦截，没有阅读模式，没有同步，也没有多窗口
+- 高度依赖系统 WebView，系统 WebView 太旧的话新特性可能用不上
+- 目标 SDK 是 29，还没适配 Android 14/15 的分区存储新规
+
+这些都在待办里，欢迎提 Issue 催。
+
+---
+
+## 反馈
+
+- Bug：用 Issue 模板，带上机型、系统版本、WebView 版本，最好有复现步骤
+- 提需求前先说清楚「不做会怎样」，比「我想要」有用得多
+
+## 协议
+
+MIT，见 [LICENSE](LICENSE)。
+
+图标字体和 Markdown 渲染器（marked）的授权说明在 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+
+---
+
+<sub>深探 · 开始一切。（允许我中二一下）</sub>

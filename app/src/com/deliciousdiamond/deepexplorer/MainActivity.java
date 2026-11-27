@@ -184,12 +184,12 @@ public class MainActivity extends Activity {
     private final Map<String, Long> diagnosticThrottle = new HashMap<>();
 
     private static final String[] THEME_IDS = {"nightly", "ocean", "forest", "sunset", "rose", "graphite"};
-    private static final int[] THEME_PRIMARY_LIGHT = {0xFF6D28D9, 0xFF0E7490, 0xFF15803D, 0xFFC2410C, 0xFFBE185D, 0xFF334155};
-    private static final int[] THEME_PRIMARY_DARK = {0xFFC4A7FF, 0xFF67E8F9, 0xFF86EFAC, 0xFFFDBA74, 0xFFF9A8D4, 0xFFCBD5E1};
-    private static final int[] THEME_ACCENT_LIGHT = {0xFFD946A6, 0xFF06B6D4, 0xFF65A30D, 0xFFF59E0B, 0xFFEC4899, 0xFF64748B};
-    private static final int[] THEME_ACCENT_DARK = {0xFFFF8AC7, 0xFF22D3EE, 0xFFBEF264, 0xFFFBBF24, 0xFFF472B6, 0xFF94A3B8};
+    private static final int[] THEME_PRIMARY_LIGHT = {0xFF1A73E8, 0xFF0E7490, 0xFF15803D, 0xFFC2410C, 0xFFBE185D, 0xFF334155};
+    private static final int[] THEME_PRIMARY_DARK = {0xFF8AB4F8, 0xFF67E8F9, 0xFF86EFAC, 0xFFFDBA74, 0xFFF9A8D4, 0xFFCBD5E1};
+    private static final int[] THEME_ACCENT_LIGHT = {0xFF1967D2, 0xFF06B6D4, 0xFF65A30D, 0xFFF59E0B, 0xFFEC4899, 0xFF64748B};
+    private static final int[] THEME_ACCENT_DARK = {0xFFAECBFA, 0xFF22D3EE, 0xFFBEF264, 0xFFFBBF24, 0xFFF472B6, 0xFF94A3B8};
     private static final int[][] THEME_BG_LIGHT = {
-            {0xFFFBF7FF, 0xFFF3EDFF, 0xFFEDE4FF},
+            {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF},
             {0xFFF3FBFF, 0xFFE6F7FF, 0xFFD8F1FF},
             {0xFFF5FBF4, 0xFFE8F7E4, 0xFFDDF1D8},
             {0xFFFFF8F1, 0xFFFFEEDC, 0xFFFFE3CC},
@@ -197,7 +197,7 @@ public class MainActivity extends Activity {
             {0xFFF8FAFC, 0xFFEEF3F8, 0xFFE5ECF3}
     };
     private static final int[][] THEME_BG_DARK = {
-            {0xFF08060F, 0xFF0F081C, 0xFF170B2B},
+            {0xFF0B0B0F, 0xFF0B0B0F, 0xFF0B0B0F},
             {0xFF04121A, 0xFF062330, 0xFF083344},
             {0xFF06130A, 0xFF0B2113, 0xFF10331D},
             {0xFF1A0A04, 0xFF261006, 0xFF33170A},
@@ -207,7 +207,7 @@ public class MainActivity extends Activity {
     private static final String[] FONT_IDS = {"sans", "serif", "mono", "condensed", "light"};
     private static final String[] FONT_FAMILIES = {"sans-serif", "serif", "monospace", "sans-serif-condensed", "sans-serif-light"};
     private static final int[] FONT_NAMES = {R.string.font_sans, R.string.font_serif, R.string.font_mono, R.string.font_condensed, R.string.font_light};
-    private static final int[] THEME_NAMES = {R.string.theme_nightly, R.string.theme_ocean, R.string.theme_forest,
+    private static final int[] THEME_NAMES = {R.string.theme_minimal, R.string.theme_ocean, R.string.theme_forest,
             R.string.theme_sunset, R.string.theme_rose, R.string.theme_graphite};
 
     private final List<BrowserTab> tabs = new ArrayList<>();
@@ -1228,7 +1228,7 @@ public class MainActivity extends Activity {
     private void setupSearchBackground() {
         GradientDrawable normal = new GradientDrawable();
         normal.setShape(GradientDrawable.RECTANGLE);
-        normal.setCornerRadius(dp(31));
+        normal.setCornerRadius(dp(8));
         normal.setGradientType(GradientDrawable.LINEAR_GRADIENT);
         normal.setOrientation(GradientDrawable.Orientation.TOP_BOTTOM);
         normal.setColors(new int[]{getColorCompat(R.color.glass_top), getColorCompat(R.color.glass_bottom)});
@@ -2676,7 +2676,7 @@ public class MainActivity extends Activity {
         GradientDrawable drawable = new GradientDrawable();
         drawable.setShape(GradientDrawable.RECTANGLE);
         drawable.setColor(color);
-        drawable.setCornerRadius(dp(14));
+        drawable.setCornerRadius(dp(8));
         return drawable;
     }
 
@@ -3674,7 +3674,7 @@ public class MainActivity extends Activity {
         GradientDrawable drawable = new GradientDrawable();
         drawable.setShape(GradientDrawable.RECTANGLE);
         drawable.setColor(color);
-        drawable.setCornerRadius(dp(14));
+        drawable.setCornerRadius(dp(8));
         return drawable;
     }
 

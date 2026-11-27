@@ -2,6 +2,15 @@
 
 All notable changes are documented here. Version format follows `1.x.y`.
 
+## 3.0.0 — 2026-11-27
+
+- New default "Minimal" theme: white background, Google-blue accent, no gradient or
+  glow. The purple Nightly look is replaced; the other five themes still work.
+- Flat UI pass: 8dp corners instead of 22-31dp, 1dp hairline borders instead of glass
+  gradients and elevation, flat top/bottom bars, flatter cards and dialogs.
+- Typography tweaks: letter spacing reset, slightly smaller search text, reduced
+  shadows on the AI button; dialog and page spacing kept consistent.
+
 ## 2.0.2 — 2026-11-25
 
 - Weather city validation no longer blocks the editor: the city is saved immediately

@@ -274,7 +274,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:fontFamily="sans-serif-medium"
-                android:letterSpacing="0.012"
+                android:letterSpacing="0"
                 android:text="@string/app_name"
                 android:textColor="@color/on_bg"
                 android:textSize="24sp" />
@@ -285,7 +285,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="12dp"
                 android:layout_marginBottom="3dp"
-                android:letterSpacing="0.025"
+                android:letterSpacing="0"
                 android:text="@string/home_tagline"
                 android:textColor="@color/on_surface_variant"
                 android:textSize="11sp" />
@@ -297,7 +297,7 @@
             android:layout_height="56dp"
             android:layout_marginTop="18dp"
             android:background="@drawable/bg_search"
-            android:elevation="6dp"
+            android:elevation="0dp"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:paddingStart="10dp"
@@ -356,7 +356,7 @@
                 android:singleLine="true"
                 android:textColor="@color/on_bg"
                 android:textColorHint="@color/on_surface_variant"
-                android:textSize="16sp" />
+                android:textSize="15sp" />
 
             <FrameLayout
                 android:id="@+id/ai_button"
@@ -539,7 +539,7 @@
         android:background="@drawable/bg_ai_fab"
         android:clickable="true"
         android:contentDescription="@string/ai_chat_entry"
-        android:elevation="10dp"
+        android:elevation="4dp"
         android:focusable="true"
         android:padding="15dp"
         android:src="@drawable/ic_ai"
