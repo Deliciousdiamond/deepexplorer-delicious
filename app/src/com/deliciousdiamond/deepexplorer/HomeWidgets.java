@@ -81,8 +81,6 @@ final class HomeWidgets {
         this.items = WidgetStore.load(activity);
         this.accentColor = activity.getResources().getColor(R.color.primary);
         this.quotes = new QuoteRepository(activity, io, main);
-        WidgetStore.Item quote = WidgetStore.find(items, WidgetStore.QUOTE);
-        if (quote != null && quote.enabled) quotes.prefetch();
     }
 
     void setAccent(int color) {
@@ -102,6 +100,15 @@ final class HomeWidgets {
             if (item == null || !item.enabled) continue;
             View card = buildCard(item);
             if (card != null) container.addView(card);
+        }
+        WidgetStore.Item quote = WidgetStore.find(items, WidgetStore.QUOTE);
+        if (quote != null && quote.enabled) {
+            quotes.refreshQuote(false, new Runnable() {
+                @Override
+                public void run() {
+                    refresh();
+                }
+            });
         }
     }
 
@@ -323,8 +330,12 @@ final class HomeWidgets {
         card.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                quotes.next();
-                refresh();
+                quotes.refreshQuote(true, new Runnable() {
+                    @Override
+                    public void run() {
+                        refresh();
+                    }
+                });
             }
         });
         return card;

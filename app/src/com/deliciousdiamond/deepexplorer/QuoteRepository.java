@@ -50,6 +50,7 @@ final class QuoteRepository {
     private static final int MAX_CACHE = 24;
     private static final long MIN_INTERVAL_MS = 1500L;
     private static final long RETRY_AFTER_MS = 45_000L;
+    private static final long FRESH_TTL_MS = 30_000L;
 
     private static final String[] FALLBACK_TEXT = {
             "路漫漫其修远兮，吾将上下而求索。",
@@ -123,6 +124,41 @@ final class QuoteRepository {
                             }
                             failed = false;
                             add(quote);
+                        }
+                    });
+                }
+            });
+        } catch (RejectedExecutionException e) {
+            fetching = false;
+        }
+    }
+
+    /** Fetches a fresh quote; force=true is used for taps, otherwise a 30s throttle applies. */
+    void refreshQuote(final boolean force, final Runnable onDone) {
+        long now = System.currentTimeMillis();
+        if (fetching) return;
+        if (!force && now - lastAttemptAt < FRESH_TTL_MS) return;
+        if (!force && failed && now - lastAttemptAt < RETRY_AFTER_MS) return;
+        fetching = true;
+        lastAttemptAt = now;
+        try {
+            io.execute(new Runnable() {
+                @Override
+                public void run() {
+                    final Quote quote = fetchOne();
+                    main.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            fetching = false;
+                            if (quote == null) {
+                                failed = true;
+                            } else {
+                                failed = false;
+                                add(quote);
+                                index = Math.max(0, cache.size() - 1);
+                                saveIndex();
+                            }
+                            if (onDone != null) onDone.run();
                         }
                     });
                 }

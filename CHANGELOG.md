@@ -2,6 +2,19 @@
 
 All notable changes are documented here. Version format follows `1.x.y`.
 
+## 3.1.0 — 2026-11-27
+
+- The AI star in the search box is now a bare line icon: no background, no border,
+  20dp, visually matched to the search engine badge.
+- Enabling AI mode now reveals a theme-colored fill from the right edge of the search
+  box with a ClipDrawable + ValueAnimator; the placeholder, text, star and divider
+  cross-fade to white. Disabling retracts it to the right. Focusing the field keeps the
+  state in sync.
+- The floating AI button is a bare star as well.
+- Every remaining container corner radius is 0dp.
+- The quote widget now asks Hitokoto for a fresh quote in the background when shown
+  (30s throttle) and on every tap, instead of cycling a stale cache.
+
 ## 3.0.0 — 2026-11-27
 
 - New default "Minimal" theme: white background, Google-blue accent, no gradient or
