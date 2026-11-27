@@ -2,6 +2,14 @@
 
 All notable changes are documented here. Version format follows `1.x.y`.
 
+## 3.2.0 — 2026-11-27
+
+- Frosted-glass pass: top/bottom bars, menus and dialogs use translucent gradient
+  surfaces with hairline borders instead of opaque white.
+- Language can now be switched straight from the bottom menu (Settings → 语言 still
+  works). Picking a language also sets the process locale for dates/numbers, and
+  "follow system" restores the captured system default.
+
 ## 3.1.1 — 2026-11-27
 
 - Restored the original sparkle icon for both AI buttons while keeping the no-background

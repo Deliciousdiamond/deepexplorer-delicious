@@ -3,11 +3,11 @@
     <color name="bg">#FF0B0B0F</color>
     <color name="bg_mid">#FF0F0F13</color>
     <color name="bg_gradient_end">#FF131318</color>
-    <color name="glass_top">#FF0B0B0F</color>
-    <color name="glass_bottom">#FF0B0B0F</color>
-    <color name="glass_border">#FF3C4043</color>
-    <color name="glass_nav">#FF0B0B0F</color>
-    <color name="glass_topbar">#FF0B0B0F</color>
+    <color name="glass_top">#F20B0B0F</color>
+    <color name="glass_bottom">#E60B0B0F</color>
+    <color name="glass_border">#4D3C4043</color>
+    <color name="glass_nav">#F20B0B0F</color>
+    <color name="glass_topbar">#F20B0B0F</color>
     <color name="ai_grad_start">#FF17233A</color>
     <color name="ai_grad_center">#FF17233A</color>
     <color name="ai_grad_end">#FF1E2C46</color>

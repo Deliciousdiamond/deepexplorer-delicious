@@ -16,6 +16,7 @@ final class LocaleHelper {
 
     private static final String FILE = "deepexplorer_locale";
     private static final String KEY = "language";
+    private static final Locale SYSTEM_DEFAULT = Locale.getDefault();
 
     private LocaleHelper() {
     }
@@ -33,9 +34,14 @@ final class LocaleHelper {
 
     static Context wrap(Context base) {
         String code = getLanguage(base);
-        if (SYSTEM.equals(code)) return base;
+        if (SYSTEM.equals(code)) {
+            Locale.setDefault(SYSTEM_DEFAULT);
+            return base;
+        }
+        Locale locale = localeFor(code);
+        Locale.setDefault(locale);
         Configuration configuration = new Configuration(base.getResources().getConfiguration());
-        configuration.setLocale(localeFor(code));
+        configuration.setLocale(locale);
         return base.createConfigurationContext(configuration);
     }
 

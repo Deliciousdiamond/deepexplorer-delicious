@@ -3915,6 +3915,12 @@ public class MainActivity extends Activity {
                 showDownloadsDialog();
             }
         }));
+        panel.addView(menuRow(R.drawable.ic_globe, getString(R.string.language), false, new Runnable() {
+            @Override
+            public void run() {
+                showLanguageDialog(null);
+            }
+        }));
         panel.addView(menuRow(R.drawable.ic_palette, getString(R.string.appearance), false, new Runnable() {
             @Override
             public void run() {
