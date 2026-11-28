@@ -254,10 +254,6 @@ public class MainActivity extends Activity {
     private SearchEngine currentEngine;
     private List<SearchEngine> engines;
     private TransitionDrawable searchBackground;
-    private ClipDrawable searchFillClip;
-    private boolean enginePickerHidden;
-    private ValueAnimator searchFillAnimator;
-    private float searchFillFraction;
     private View searchDivider;
     private ImageView engineChevron;
     private int colorOutline;
@@ -1232,26 +1228,29 @@ public class MainActivity extends Activity {
     private void updateAiUi() {
         if (searchInput == null) return;
         updateSearchHint();
+        searchInput.setTextColor(colorOnSurface);
+        aiIcon.setImageTintList(android.content.res.ColorStateList.valueOf(
+                aiMode ? colorPrimary : colorOnSurfaceVariant));
         aiButton.setBackground(null);
         aiButton.setForeground(null);
         if (Build.VERSION.SDK_INT >= 26) aiButton.setDefaultFocusHighlightEnabled(false);
+        if (enginePicker != null) enginePicker.setVisibility(aiMode ? View.GONE : View.VISIBLE);
+        if (searchDivider != null) searchDivider.setVisibility(aiMode ? View.GONE : View.VISIBLE);
         applyAiSearchBackground(true);
     }
 
     private void setupSearchBackground() {
-        Drawable base = getDrawable(R.drawable.bg_search);
-        GradientDrawable wash = new GradientDrawable(
-                GradientDrawable.Orientation.LEFT_RIGHT,
-                new int[]{blendColor(colorPrimary, Color.WHITE, 0.42f),
-                        blendColor(colorAccent, Color.WHITE, 0.42f)});
-        wash.setCornerRadius(dp(31));
-        searchFillClip = new ClipDrawable(wash, Gravity.RIGHT, ClipDrawable.HORIZONTAL);
-        searchBox.setBackground(new LayerDrawable(new Drawable[]{base, searchFillClip}));
+        Drawable normal = getDrawable(R.drawable.bg_search);
+        Drawable ai = getDrawable(R.drawable.bg_search_ai);
+        searchBackground = new TransitionDrawable(new Drawable[]{normal, ai});
+        searchBackground.setCrossFadeEnabled(true);
+        searchBox.setBackground(searchBackground);
         searchBox.setForeground(null);
-        searchFillFraction = aiMode ? 1f : 0f;
-        searchFillClip.setLevel((int) (searchFillFraction * 10000));
-        setSearchFillFraction(searchFillFraction);
-        searchGradientActive = aiMode;
+        searchGradientActive = false;
+        if (aiMode) {
+            searchBackground.startTransition(0);
+            searchGradientActive = true;
+        }
     }
 
     /** Linear blend: fraction 0 keeps the color, 1 returns white. */
@@ -1268,57 +1267,16 @@ public class MainActivity extends Activity {
     }
 
     private void applyAiSearchBackground(boolean animate) {
-        if (searchFillClip == null) return;
-        final float target = aiMode ? 1f : 0f;
-        if (searchFillAnimator != null) searchFillAnimator.cancel();
+        if (searchBackground == null) return;
+        if (searchGradientActive == aiMode) return;
         searchGradientActive = aiMode;
         if (!animate) {
-            setSearchFillFraction(target);
+            if (aiMode) searchBackground.startTransition(0);
+            else searchBackground.resetTransition();
             return;
         }
-        searchFillAnimator = ValueAnimator.ofFloat(searchFillFraction, target);
-        searchFillAnimator.setDuration(380);
-        searchFillAnimator.setInterpolator(new PathInterpolator(0.2f, 0.9f, 0.2f, 1f));
-        searchFillAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                setSearchFillFraction((Float) animation.getAnimatedValue());
-            }
-        });
-        searchFillAnimator.start();
-    }
-
-    /** Applies the fill fraction to the wash, text, star and engine picker. */
-    private void setSearchFillFraction(float fraction) {
-        searchFillFraction = Math.max(0f, Math.min(1f, fraction));
-        if (searchFillClip != null) {
-            searchFillClip.setLevel((int) (searchFillFraction * 10000));
-        }
-        ArgbEvaluator evaluator = new ArgbEvaluator();
-        int textColor = (Integer) evaluator.evaluate(searchFillFraction,
-                colorOnSurface, Color.WHITE);
-        int hintColor = (Integer) evaluator.evaluate(searchFillFraction,
-                colorOnSurfaceVariant, 0xE6FFFFFF);
-        int starColor = (Integer) evaluator.evaluate(searchFillFraction,
-                colorOnSurfaceVariant, Color.WHITE);
-        if (searchInput != null) {
-            searchInput.setTextColor(textColor);
-            searchInput.setHintTextColor(hintColor);
-        }
-        if (aiIcon != null) {
-            aiIcon.setImageTintList(android.content.res.ColorStateList.valueOf(starColor));
-        }
-        boolean hideEngine = searchFillFraction > 0.02f;
-        if (hideEngine != enginePickerHidden) {
-            enginePickerHidden = hideEngine;
-            if (enginePicker != null) {
-                enginePicker.setVisibility(hideEngine ? View.GONE : View.VISIBLE);
-                enginePicker.setAlpha(1f);
-            }
-            if (searchDivider != null) {
-                searchDivider.setVisibility(hideEngine ? View.GONE : View.VISIBLE);
-            }
-        }
+        if (aiMode) searchBackground.startTransition(360);
+        else searchBackground.reverseTransition(360);
     }
 
     private void updateEngineBadge() {

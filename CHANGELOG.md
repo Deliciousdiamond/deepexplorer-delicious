@@ -2,6 +2,12 @@
 
 All notable changes are documented here. Version format follows `1.x.y`.
 
+## 3.3.3 — 2026-11-28
+
+- Search AI transition is now the 2.0 crossfade (360ms) between the white glass pill
+  and the light AI background, instead of the left-to-right fill reveal.
+- The star stays bare with no background, ripple or focus ring while AI mode is on.
+
 ## 3.3.2 — 2026-11-28
 
 - Search bar restored to the 2.0 glass pill: 56dp tall, 31dp radius, translucent
