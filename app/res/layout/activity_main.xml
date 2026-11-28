@@ -297,7 +297,7 @@
             android:layout_height="56dp"
             android:layout_marginTop="18dp"
             android:background="@drawable/bg_search"
-            android:elevation="0dp"
+            android:elevation="6dp"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:paddingStart="10dp"
@@ -362,9 +362,9 @@
 
             <FrameLayout
                 android:id="@+id/ai_button"
-                android:layout_width="38dp"
-                android:layout_height="38dp"
-                android:layout_marginStart="2dp"
+                android:layout_width="46dp"
+                android:layout_height="46dp"
+                android:layout_marginStart="4dp"
                 android:background="@null"
                 android:clickable="true"
                 android:contentDescription="@string/ai_mode_on"
@@ -376,7 +376,7 @@
                     android:layout_height="22dp"
                     android:layout_gravity="center"
                     android:contentDescription="@null"
-                    android:src="@drawable/ic_ai_solid"
+                    android:src="@drawable/ic_ai"
                     android:tint="@color/on_surface_variant" />
             </FrameLayout>
         </LinearLayout>

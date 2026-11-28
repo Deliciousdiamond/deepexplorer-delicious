@@ -1244,7 +1244,7 @@ public class MainActivity extends Activity {
                 GradientDrawable.Orientation.LEFT_RIGHT,
                 new int[]{blendColor(colorPrimary, Color.WHITE, 0.42f),
                         blendColor(colorAccent, Color.WHITE, 0.42f)});
-        wash.setCornerRadius(0f);
+        wash.setCornerRadius(dp(31));
         searchFillClip = new ClipDrawable(wash, Gravity.RIGHT, ClipDrawable.HORIZONTAL);
         searchBox.setBackground(new LayerDrawable(new Drawable[]{base, searchFillClip}));
         searchBox.setForeground(null);

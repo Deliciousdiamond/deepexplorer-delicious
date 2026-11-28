@@ -2,6 +2,13 @@
 
 All notable changes are documented here. Version format follows `1.x.y`.
 
+## 3.3.2 — 2026-11-28
+
+- Search bar restored to the 2.0 glass pill: 56dp tall, 31dp radius, translucent
+  gradient and a 6dp shadow; the original 22dp sparkle sits in a 46dp touch target.
+- The star still has no background, ripple or focus ring when tapped, and the AI
+  reveal fill stays inside the pill.
+
 ## 3.3.1 — 2026-11-28
 
 - Download banner now fades out 2 seconds after it appears (was 4s); banner and
