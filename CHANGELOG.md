@@ -2,6 +2,16 @@
 
 All notable changes are documented here. Version format follows `1.x.y`.
 
+## 3.3.1 — 2026-11-28
+
+- Download banner now fades out 2 seconds after it appears (was 4s); banner and
+  download card corners are 0dp.
+- Home search reverted to the second design: square, light fill reveal from the right,
+  no gradient border or outward outline; the star has no focus ring or circular
+  background.
+- Floating AI button restored to the filled circular style. Its quick menu now sits
+  above the button, so tapping the button again closes the menu.
+
 ## 3.3.0 — 2026-11-27
 
 - Home search AI transition redesigned: instead of a solid blue fill, a light gradient

@@ -174,7 +174,7 @@ public class MainActivity extends Activity {
     private static final int BANNER_GREEN = 0xFF1B7F4B;
     private static final int REQ_BG_IMAGE = 41;
     private static final long DIAGNOSTIC_COOLDOWN_MS = 5L * 60L * 1000L;
-    private static final long DOWNLOAD_BANNER_AUTO_HIDE_MS = 4000L;
+    private static final long DOWNLOAD_BANNER_AUTO_HIDE_MS = 2000L;
     private static final String[] OVERSEAS_HOSTS = {
             "google.com", "googleapis.com", "gstatic.com", "googlevideo.com", "googleusercontent.com",
             "youtube.com", "ytimg.com", "x.com", "twitter.com", "t.co", "facebook.com", "fbcdn.net",
@@ -254,7 +254,6 @@ public class MainActivity extends Activity {
     private List<SearchEngine> engines;
     private TransitionDrawable searchBackground;
     private ClipDrawable searchFillClip;
-    private GradientBorderDrawable searchBorder;
     private boolean enginePickerHidden;
     private ValueAnimator searchFillAnimator;
     private float searchFillFraction;
@@ -1140,8 +1139,16 @@ public class MainActivity extends Activity {
 
     private void applyAiFabTint() {
         if (aiFab == null) return;
-        aiFab.setBackground(null);
-        aiFab.setImageTintList(android.content.res.ColorStateList.valueOf(colorPrimary));
+        GradientDrawable shape = new GradientDrawable();
+        shape.setShape(GradientDrawable.OVAL);
+        shape.setColor(colorPrimary);
+        GradientDrawable mask = new GradientDrawable();
+        mask.setShape(GradientDrawable.OVAL);
+        mask.setColor(Color.WHITE);
+        RippleDrawable ripple = new RippleDrawable(
+                android.content.res.ColorStateList.valueOf(getColorCompat(R.color.ripple)), shape, mask);
+        aiFab.setBackground(ripple);
+        aiFab.setImageTintList(android.content.res.ColorStateList.valueOf(colorOnPrimary));
     }
 
     private void applyFont() {
@@ -1225,6 +1232,8 @@ public class MainActivity extends Activity {
         if (searchInput == null) return;
         updateSearchHint();
         aiButton.setBackground(null);
+        aiButton.setForeground(null);
+        if (Build.VERSION.SDK_INT >= 26) aiButton.setDefaultFocusHighlightEnabled(false);
         applyAiSearchBackground(true);
     }
 
@@ -1232,14 +1241,12 @@ public class MainActivity extends Activity {
         Drawable base = getDrawable(R.drawable.bg_search);
         GradientDrawable wash = new GradientDrawable(
                 GradientDrawable.Orientation.LEFT_RIGHT,
-                new int[]{blendColor(colorPrimary, Color.WHITE, 0.90f),
-                        blendColor(colorAccent, Color.WHITE, 0.87f)});
+                new int[]{blendColor(colorPrimary, Color.WHITE, 0.42f),
+                        blendColor(colorAccent, Color.WHITE, 0.42f)});
         wash.setCornerRadius(0f);
         searchFillClip = new ClipDrawable(wash, Gravity.RIGHT, ClipDrawable.HORIZONTAL);
         searchBox.setBackground(new LayerDrawable(new Drawable[]{base, searchFillClip}));
-        searchBorder = new GradientBorderDrawable(
-                new int[]{colorPrimary, 0xFF9B72CB, 0xFFD96570}, dp(2));
-        searchBox.setForeground(searchBorder);
+        searchBox.setForeground(null);
         searchFillFraction = aiMode ? 1f : 0f;
         searchFillClip.setLevel((int) (searchFillFraction * 10000));
         setSearchFillFraction(searchFillFraction);
@@ -1280,22 +1287,21 @@ public class MainActivity extends Activity {
         searchFillAnimator.start();
     }
 
-    /** Applies the reveal fraction to the wash, gradient border, star and engine picker. */
+    /** Applies the fill fraction to the wash, text, star and engine picker. */
     private void setSearchFillFraction(float fraction) {
         searchFillFraction = Math.max(0f, Math.min(1f, fraction));
         if (searchFillClip != null) {
             searchFillClip.setLevel((int) (searchFillFraction * 10000));
         }
-        if (searchBorder != null) {
-            searchBorder.setFraction(searchFillFraction);
-        }
         ArgbEvaluator evaluator = new ArgbEvaluator();
-        int starColor = (Integer) evaluator.evaluate(searchFillFraction,
-                colorOnSurfaceVariant, colorPrimary);
+        int textColor = (Integer) evaluator.evaluate(searchFillFraction,
+                colorOnSurface, Color.WHITE);
         int hintColor = (Integer) evaluator.evaluate(searchFillFraction,
-                colorOnSurfaceVariant, colorPrimary);
+                colorOnSurfaceVariant, 0xE6FFFFFF);
+        int starColor = (Integer) evaluator.evaluate(searchFillFraction,
+                colorOnSurfaceVariant, Color.WHITE);
         if (searchInput != null) {
-            searchInput.setTextColor(colorOnSurface);
+            searchInput.setTextColor(textColor);
             searchInput.setHintTextColor(hintColor);
         }
         if (aiIcon != null) {
@@ -2035,7 +2041,7 @@ public class MainActivity extends Activity {
         panel.setAlpha(0f);
         panel.setScaleX(0.94f);
         panel.setScaleY(0.94f);
-        popup.showAtLocation(aiFab, Gravity.BOTTOM | Gravity.END, dp(16), dp(120));
+        popup.showAtLocation(aiFab, Gravity.BOTTOM | Gravity.END, dp(16), dp(142));
         panel.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(160).start();
     }
 
@@ -2729,7 +2735,7 @@ public class MainActivity extends Activity {
         GradientDrawable drawable = new GradientDrawable();
         drawable.setShape(GradientDrawable.RECTANGLE);
         drawable.setColor(color);
-        drawable.setCornerRadius(dp(8));
+        drawable.setCornerRadius(0f);
         return drawable;
     }
 
@@ -3727,7 +3733,7 @@ public class MainActivity extends Activity {
         GradientDrawable drawable = new GradientDrawable();
         drawable.setShape(GradientDrawable.RECTANGLE);
         drawable.setColor(color);
-        drawable.setCornerRadius(dp(8));
+        drawable.setCornerRadius(0f);
         return drawable;
     }
 
