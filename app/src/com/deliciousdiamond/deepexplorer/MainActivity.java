@@ -146,6 +146,7 @@ public class MainActivity extends Activity {
     private boolean downloadBannerVisible;
     private boolean downloadBannerComplete;
     private boolean downloadBannerTerminal;
+    private boolean downloadBannerStartDismissed;
     private long downloadBannerDismissedId;
     private float downloadBannerBaseY;
     private int downloadBannerColor;
@@ -2567,6 +2568,7 @@ public class MainActivity extends Activity {
             }
             long id = downloadManager.enqueue(request);
             latestDownloadId = id;
+            downloadBannerStartDismissed = false;
             if (!downloadIds.contains(id)) downloadIds.add(0, id);
             while (downloadIds.size() > 30) downloadIds.remove(downloadIds.size() - 1);
             saveDownloadIds();
@@ -2641,6 +2643,7 @@ public class MainActivity extends Activity {
 
     private void showDownloadBannerStart() {
         if (mode != Mode.BROWSER || downloadBanner == null) return;
+        if (downloadBannerStartDismissed) return;
         handler.removeCallbacks(downloadBannerAutoHide);
         downloadBannerComplete = false;
         downloadBannerTerminal = false;
@@ -2659,6 +2662,7 @@ public class MainActivity extends Activity {
                     .setDuration(260)
                     .setInterpolator(new PathInterpolator(0.2f, 0.9f, 0.2f, 1f))
                     .withLayer();
+            scheduleDownloadBannerAutoHide();
         } else {
             downloadBanner.setTranslationY(downloadBannerBaseY);
         }
@@ -2772,6 +2776,8 @@ public class MainActivity extends Activity {
         if (downloadBannerTerminal && latestDownloadId > 0) {
             downloadBannerDismissedId = latestDownloadId;
             SettingsStore.setBannerDismissedId(this, downloadBannerDismissedId);
+        } else if (latestDownloadId > 0) {
+            downloadBannerStartDismissed = true;
         }
         downloadBannerTerminal = false;
         downloadBannerVisible = false;
